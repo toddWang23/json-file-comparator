@@ -1,0 +1,136 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "airbnb",
+    "airbnb/hooks",
+    "plugin:react/recommended",
+    "plugin:prettier/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
+  ],
+  "globals": {
+    "tt": "readonly"
+  },
+  "plugins": [
+    "react",
+    "react-hooks",
+    "import",
+    "eslint-plugin-import",
+    "jsx-a11y",
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "consistent-return": "off",
+    "no-nested-ternary": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "import/no-commonjs": "off",
+    "import/first": "warn",
+    "import/order": "off",
+    "jsx-quotes": "off",
+    "react/jsx-closing-bracket-location": "off",
+    "no-shadow": "off",
+    "semi": "off",
+    "camelcase": "off",
+    "react/jsx-props-no-spreading": "off",
+    "no-underscore-dangle": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [".js", ".tsx", "ts"]
+      }
+    ],
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": [
+          "arrow-function",
+          "function-expression",
+          "function-declaration"
+        ],
+        "unnamedComponents": ["arrow-function", "function-expression"]
+      }
+    ],
+    "react/prop-types": "off",
+    "operator-assignment": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ],
+    "prettier/prettier": [
+      "warn",
+      {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "useTabs": false,
+        "semi": false,
+        "singleQuote": true,
+        "quoteProps": "as-needed",
+        // "trailingComma": "all",
+        "bracketSpacing": true,
+        "jsxBracketSameLine": true,
+        "arrowParens": "avoid",
+        "endOfLine": "auto"
+      }
+    ],
+    "prefer-const": "warn",
+    "import/no-cycle": "warn",
+    "import/no-named-as-default": "warn",
+    "import/no-named-as-default-member": "warn",
+    "react/sort-comp": ["warn"],
+    "react/require-default-props": "off",
+    "import/extensions": [
+      "error",
+      "never",
+      {
+        "ts": "never",
+        "js": "never",
+        "tsx": "never"
+      }
+    ],
+    "import/no-unresolved": [
+      2,
+      {
+        "ignore": ["^@/"] // @ 是设置的路径别名
+      }
+    ],
+    "jsx-a11y/no-static-element-interactions": [0],
+    "jsx-a11y/click-events-have-key-events": 0,
+    "import/prefer-default-export": "off",
+    "no-plusplus": "off",
+    "react/display-name": [0],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
+    "no-restricted-globals": ["error", "event"],
+    "no-unused-expressions": "off",
+    "jsx-a11y/media-has-caption": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [["@", "./src"]],
+        "extensions": [".js", ".tsx", "ts"]
+      },
+      "node": {
+        "extensions": [".js", ".tsx", ".ts", ".json"]
+      }
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    }
+  },
+  "parser": "@typescript-eslint/parser"
+}
