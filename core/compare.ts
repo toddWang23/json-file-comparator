@@ -1,8 +1,6 @@
-import { readFile } from "fs";
+import { readPartialFile } from 'util/file'
 
 export const compareBasedOnPath = (
   referencePath: string,
-  comparedFilePath: string,
-) => {
-  const referenceRS = readFile(referencePath, "utf-8");
-};
+  comparedFilePath: string
+) => {}
