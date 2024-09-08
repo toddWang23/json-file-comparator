@@ -1,5 +1,5 @@
 export interface FileReadOption {
   path: string
-  start: number
-  end: number
+  start?: number
+  end?: number
 }

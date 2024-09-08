@@ -26,4 +26,20 @@ export const readPartialFile = (options: FileReadOption): Promise<string> => {
     start,
     end
   })
+
+  return new Promise((resolve, reject) => {
+    let readString = ''
+
+    referenceRS.addListener('data', data => {
+      readString += data
+    })
+
+    referenceRS.addListener('close', () => {
+      resolve(readString)
+    })
+
+    referenceRS.addListener('error', error => {
+      reject(error)
+    })
+  })
 }

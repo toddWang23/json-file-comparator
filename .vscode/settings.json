@@ -1,4 +1,8 @@
 {
   "editor.formatOnSave": true,
-  "vetur.format.defaultFormatter.ts": "prettier"
+  "editor.defaultFormatter": "vscode.typescript-language-features",
+  "javascript.format.enable": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }
