@@ -9,3 +9,10 @@ export interface DiffLevel {
   endIndex: number
   attributeName: string
 }
+
+export enum DATA_TYPE {
+  STRING,
+  NUMBER,
+  ARRAY,
+  OBJECT
+}
