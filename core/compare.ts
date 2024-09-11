@@ -1,6 +1,9 @@
-import { DiffLevel } from 'model/dataProcess'
+import { DiffLevel, DATA_TYPE } from 'model/dataProcess'
 import { readPartialFile } from 'util/file'
 import { isValidSymbol } from './util/char'
+import { throwErrorWithCode } from 'util/error'
+import { JSON_COLON_MISS, JSON_KEY_NOT_CLOSE } from 'constant'
+import { JSON_COLON_MISS_MSG, JSON_KEY_NUMBER_STR_MIX_MSG } from 'constant/errorMessage'
 
 /**
  * loop the JSON string from start index, find name
@@ -45,6 +48,52 @@ const getStringEndIndex = (sourceStr: string, startIndex: number) => {
     // not appropriate when end of name match, but not matter
     lastChar = char
   }
+
+  return -1
+}
+
+/**
+ * find the interval space between JSON key and value
+ * @param sourceStr source string need to be search
+ * @param startIndex checking start index
+ * @returns 
+ */
+const getColonSpaceEndIndex = (sourceStr: string, startIndex: number) => {
+  const { length } = sourceStr
+
+  for (let i = startIndex; i < length; i++) {
+    const char = sourceStr[i]
+
+    if (/[^\s:]/.test(char)) {
+      return i
+    }
+  }
+  return -1
+}
+
+
+const getValueEndIndex = (sourceStr: string, startIndex: number) => {
+  const { length } = sourceStr
+
+  let checkingIndex = startIndex
+
+// rest not matched brace counter, act as stack
+const restMarkCounter = {
+  brace: 0,
+  square: 0,
+  quote: 0
+}
+
+let levelType: DATA_TYPE
+
+// find the first valid character
+while (/\s/.test(sourceStr[checkingIndex++])) {}
+
+//TODO: im here
+
+  while (checkingIndex < ) {
+    
+  }
 }
 
 export const generateLevelDiff = async (
@@ -67,22 +116,40 @@ export const generateLevelDiff = async (
     // level name matched
     const isArrayType = levelStr[0] === '['
 
-    let levelName = {
-      matching: !isArrayType,
-      name: ''
-    }
+    let checkingIndex = 0
+    // let levelName = {
+    //   matching: !isArrayType,
+    //   name: ''
+    // }
 
     // let levelValueType =
 
-    // rest not matched brace counter, act as stack
-    let restMarkCounter = {
-      brace: 0,
-      square: 0,
-      quote: 0
+    // get key end string index
+    if (!isArrayType) {
+      const attributeNameEndIndex = getStringEndIndex(levelStr, checkingIndex)
+
+      if (attributeNameEndIndex === -1) {
+        // exist current match process
+        throwErrorWithCode(JSON_KEY_NOT_CLOSE, JSON_KEY_NUMBER_STR_MIX_MSG, checkingIndex.toString())
+      }
+
+      curLoopLevelInfo.attributeName = levelStr.substring(
+        1 + checkingIndex,
+        attributeNameEndIndex
+      )
+      checkingIndex = attributeNameEndIndex + 1
+
+      // find colon index in string
+      const valueStartIndex = getColonSpaceEndIndex(levelStr, checkingIndex)
+
+      if (valueStartIndex === -1) {
+        throwErrorWithCode(JSON_COLON_MISS, JSON_COLON_MISS_MSG, checkingIndex.toString())
+      }
+
+      checkingIndex = valueStartIndex
     }
 
-    // get
-    const attributeNameEndIndex = getStringEndIndex(levelStr, 0)
+
 
     for (let i = 1; i < levelStr.length; i++) {
       let char = levelStr[i]

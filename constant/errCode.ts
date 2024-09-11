@@ -6,3 +6,9 @@ export const INVALID__JSON_FILE_CODE = 1002
 
 // JSON file number type value mixed with string
 export const JSON_VALUE_NUMBER_STR_MIX = 100301
+
+// JSON file number type value mixed with string
+export const JSON_KEY_NOT_CLOSE = 100302
+
+// JSON lost valid colon
+export const JSON_COLON_MISS = 100303
