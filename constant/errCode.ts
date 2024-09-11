@@ -12,3 +12,6 @@ export const JSON_KEY_NOT_CLOSE = 100302
 
 // JSON lost valid colon
 export const JSON_COLON_MISS = 100303
+
+// JSON value type is illegal
+export const JSON_VALUE_ILLEGAL = 100304

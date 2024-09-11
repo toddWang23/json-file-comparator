@@ -2,8 +2,17 @@ import { DiffLevel, DATA_TYPE } from 'model/dataProcess'
 import { readPartialFile } from 'util/file'
 import { isValidSymbol } from './util/char'
 import { throwErrorWithCode } from 'util/error'
-import { JSON_COLON_MISS, JSON_KEY_NOT_CLOSE } from 'constant'
-import { JSON_COLON_MISS_MSG, JSON_KEY_NUMBER_STR_MIX_MSG } from 'constant/errorMessage'
+import {
+  JSON_COLON_MISS,
+  JSON_KEY_NOT_CLOSE,
+  JSON_VALUE_ILLEGAL,
+  JSON_VALUE_NUMBER_STR_MIX
+} from 'constant'
+import {
+  JSON_COLON_MISS_MSG,
+  JSON_KEY_NUMBER_STR_MIX_MSG,
+  JSON_VALUE_ILLEGAL_MSG
+} from 'constant/errorMessage'
 
 /**
  * loop the JSON string from start index, find name
@@ -56,7 +65,7 @@ const getStringEndIndex = (sourceStr: string, startIndex: number) => {
  * find the interval space between JSON key and value
  * @param sourceStr source string need to be search
  * @param startIndex checking start index
- * @returns 
+ * @returns
  */
 const getColonSpaceEndIndex = (sourceStr: string, startIndex: number) => {
   const { length } = sourceStr
@@ -71,28 +80,46 @@ const getColonSpaceEndIndex = (sourceStr: string, startIndex: number) => {
   return -1
 }
 
-
 const getValueEndIndex = (sourceStr: string, startIndex: number) => {
   const { length } = sourceStr
 
   let checkingIndex = startIndex
 
-// rest not matched brace counter, act as stack
-const restMarkCounter = {
-  brace: 0,
-  square: 0,
-  quote: 0
-}
+  // rest not matched brace counter, act as stack
+  const restMarkCounter = {
+    brace: 0,
+    square: 0,
+    quote: 0
+  }
 
-let levelType: DATA_TYPE
+  let levelType: DATA_TYPE
 
-// find the first valid character
-while (/\s/.test(sourceStr[checkingIndex++])) {}
+  // find the first valid character
+  while (/\s/.test(sourceStr[checkingIndex])) {
+    checkingIndex++
+  }
 
-//TODO: im here
-
-  while (checkingIndex < ) {
-    
+  switch (sourceStr[checkingIndex]) {
+    case '{':
+      levelType = DATA_TYPE.OBJECT
+      break
+    case '"':
+      levelType = DATA_TYPE.STRING
+      break
+    case '[':
+      levelType = DATA_TYPE.ARRAY
+      break
+    default:
+      const asciiCode = sourceStr[checkingIndex].charCodeAt(0)
+      if (asciiCode <= 57 && asciiCode >= 48) {
+        levelType = DATA_TYPE.NUMBER
+      } else {
+        throwErrorWithCode(
+          JSON_VALUE_ILLEGAL,
+          JSON_VALUE_ILLEGAL_MSG,
+          checkingIndex.toString()
+        )
+      }
   }
 }
 
@@ -130,7 +157,11 @@ export const generateLevelDiff = async (
 
       if (attributeNameEndIndex === -1) {
         // exist current match process
-        throwErrorWithCode(JSON_KEY_NOT_CLOSE, JSON_KEY_NUMBER_STR_MIX_MSG, checkingIndex.toString())
+        throwErrorWithCode(
+          JSON_KEY_NOT_CLOSE,
+          JSON_KEY_NUMBER_STR_MIX_MSG,
+          checkingIndex.toString()
+        )
       }
 
       curLoopLevelInfo.attributeName = levelStr.substring(
@@ -143,13 +174,15 @@ export const generateLevelDiff = async (
       const valueStartIndex = getColonSpaceEndIndex(levelStr, checkingIndex)
 
       if (valueStartIndex === -1) {
-        throwErrorWithCode(JSON_COLON_MISS, JSON_COLON_MISS_MSG, checkingIndex.toString())
+        throwErrorWithCode(
+          JSON_COLON_MISS,
+          JSON_COLON_MISS_MSG,
+          checkingIndex.toString()
+        )
       }
 
       checkingIndex = valueStartIndex
     }
-
-
 
     for (let i = 1; i < levelStr.length; i++) {
       let char = levelStr[i]
