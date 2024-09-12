@@ -13,6 +13,10 @@ import {
   JSON_KEY_NUMBER_STR_MIX_MSG,
   JSON_VALUE_ILLEGAL_MSG
 } from 'constant/errorMessage'
+import {
+  getNumberValueEndIndex,
+  getValueEndIndexByType
+} from './util/valueProcessor'
 
 /**
  * loop the JSON string from start index, find name
@@ -81,16 +85,7 @@ const getColonSpaceEndIndex = (sourceStr: string, startIndex: number) => {
 }
 
 const getValueEndIndex = (sourceStr: string, startIndex: number) => {
-  const { length } = sourceStr
-
   let checkingIndex = startIndex
-
-  // rest not matched brace counter, act as stack
-  const restMarkCounter = {
-    brace: 0,
-    square: 0,
-    quote: 0
-  }
 
   let levelType: DATA_TYPE
 
@@ -114,6 +109,7 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
       if (asciiCode <= 57 && asciiCode >= 48) {
         levelType = DATA_TYPE.NUMBER
       } else {
+        // it's beyond JSON format
         throwErrorWithCode(
           JSON_VALUE_ILLEGAL,
           JSON_VALUE_ILLEGAL_MSG,
@@ -121,6 +117,8 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
         )
       }
   }
+
+  return getValueEndIndexByType(sourceStr, checkingIndex, levelType!)
 }
 
 export const generateLevelDiff = async (
@@ -183,68 +181,7 @@ export const generateLevelDiff = async (
 
       checkingIndex = valueStartIndex
     }
-
-    for (let i = 1; i < levelStr.length; i++) {
-      let char = levelStr[i]
-
-      if (/\s/.test(char)) {
-        continue
-      }
-
-      // everything between quote is ignored
-      if (char === '"' && lastChar !== '\\') {
-        restMarkCounter.quote = 1 - restMarkCounter.quote
-      }
-
-      // match the key part
-      if (levelName.matching) {
-        //  if the matched char is ", and match quote pair is empty, then the name is found and matched.
-        if (char === '"' && lastChar !== '\\' && !restMarkCounter.quote) {
-          levelName.matching = false
-
-          // search the following colon and ignore it when matching value
-          do {
-            char = levelStr[++i]
-          } while (/\s/.test(char) || char === ':')
-
-          curLoopLevelInfo.attributeName = levelName.name
-          curLoopLevelInfo.startIndex = i
-        } else if (restMarkCounter.quote) {
-          // if the quote is not closed, the char should be included into name.
-          levelName.name += char
-        } else if (char === '{' && lastChar !== '\\') {
-          restMarkCounter.brace++
-        } else {
-          // TODO:
-        }
-
-        // not appropriate when end of name match, but not matter
-        lastChar = char
-        continue
-      }
-
-      // match the value part
-      if (isValidSymbol(char, lastChar)) {
-        switch (char) {
-          case '[':
-            restMarkCounter.square++
-            break
-          case ']':
-            restMarkCounter.square--
-            break
-          case '{':
-            restMarkCounter.brace++
-            break
-          case '}':
-            restMarkCounter.brace--
-            break
-          case '"':
-            restMarkCounter.quote = 1 - restMarkCounter.quote
-        }
-      }
-
-      lastChar = char
-    }
+    const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
     return levelDiffArr
   })

@@ -5,3 +5,6 @@ export const JSON_KEY_NUMBER_STR_MIX_MSG = 'Key is closed at index: '
 export const JSON_COLON_MISS_MSG = 'Colon is missed at index: '
 
 export const JSON_VALUE_ILLEGAL_MSG = 'JSON value is not valid: '
+
+export const JSON_VALUE_EXTRA_MSG =
+  'JSON value has not closed brace or square: '

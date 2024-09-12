@@ -15,3 +15,6 @@ export const JSON_COLON_MISS = 100303
 
 // JSON value type is illegal
 export const JSON_VALUE_ILLEGAL = 100304
+
+// JSON value symbol has not closed one
+export const JSON_VALUE_EXTRA_SYMBOL = 100305

@@ -11,8 +11,8 @@ export interface DiffLevel {
 }
 
 export enum DATA_TYPE {
-  STRING,
-  NUMBER,
-  ARRAY,
-  OBJECT
+  STRING = 'string',
+  NUMBER = 'number',
+  ARRAY = 'array',
+  OBJECT = 'object'
 }
