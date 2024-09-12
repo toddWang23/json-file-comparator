@@ -17,6 +17,7 @@ import {
   getNumberValueEndIndex,
   getValueEndIndexByType
 } from './util/valueProcessor'
+import { getSectionType } from './util/dataType'
 
 /**
  * loop the JSON string from start index, find name
@@ -94,28 +95,14 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
     checkingIndex++
   }
 
-  switch (sourceStr[checkingIndex]) {
-    case '{':
-      levelType = DATA_TYPE.OBJECT
-      break
-    case '"':
-      levelType = DATA_TYPE.STRING
-      break
-    case '[':
-      levelType = DATA_TYPE.ARRAY
-      break
-    default:
-      const asciiCode = sourceStr[checkingIndex].charCodeAt(0)
-      if (asciiCode <= 57 && asciiCode >= 48) {
-        levelType = DATA_TYPE.NUMBER
-      } else {
-        // it's beyond JSON format
-        throwErrorWithCode(
-          JSON_VALUE_ILLEGAL,
-          JSON_VALUE_ILLEGAL_MSG,
-          checkingIndex.toString()
-        )
-      }
+  const sectionType = getSectionType(sourceStr[checkingIndex])
+
+  if (!sectionType) {
+    throwErrorWithCode(
+      JSON_VALUE_ILLEGAL,
+      JSON_VALUE_ILLEGAL_MSG,
+      checkingIndex.toString()
+    )
   }
 
   return getValueEndIndexByType(sourceStr, checkingIndex, levelType!)
