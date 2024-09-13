@@ -1,4 +1,4 @@
-import { createReadStream } from 'fs'
+import { createReadStream, writeFile } from 'fs'
 import { access, constants } from 'fs'
 import { FileReadOption } from './type'
 
@@ -43,3 +43,32 @@ export const readPartialFile = (options: FileReadOption): Promise<string> => {
     })
   })
 }
+
+/**
+ * write passed-in file
+ * @param path file path need to write in
+ * @param content content need to write into file
+ * @param isAppending file need to be appended after existing file. default to `true`
+ * @returns
+ */
+export const writeStringIntoFile = (
+  path: string,
+  content: string,
+  isAppending: boolean = true
+) =>
+  new Promise<undefined>((resolve, reject) => {
+    writeFile(
+      path,
+      content,
+      {
+        flag: isAppending ? 'a+' : 'w'
+      },
+      err => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(undefined)
+        }
+      }
+    )
+  })

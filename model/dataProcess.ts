@@ -7,6 +7,7 @@ export interface RetrievalPositionSlice {
 export interface DiffLevel {
   startIndex: number
   endIndex: number
+  type: DATA_TYPE
   attributeName: string | symbol
 }
 

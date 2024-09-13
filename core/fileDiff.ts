@@ -1,23 +1,17 @@
 import { DiffLevel, DATA_TYPE } from 'model/dataProcess'
 import { readPartialFile } from 'util/file'
-import { isValidSymbol } from './util/char'
 import { throwErrorWithCode } from 'util/error'
 import {
   JSON_COLON_MISS,
   JSON_KEY_NOT_CLOSE,
-  JSON_VALUE_ILLEGAL,
-  JSON_VALUE_NUMBER_STR_MIX
+  JSON_VALUE_ILLEGAL
 } from 'constant'
 import {
   JSON_COLON_MISS_MSG,
   JSON_KEY_NUMBER_STR_MIX_MSG,
   JSON_VALUE_ILLEGAL_MSG
 } from 'constant/errorMessage'
-import {
-  getNumberValueEndIndex,
-  getValueEndIndexByType
-} from './util/valueProcessor'
-import { JSON_ROOT } from 'constant/file'
+import { getValueEndIndexByType } from './util/valueProcessor'
 import { getSectionType } from './util/dataType'
 
 /**
@@ -109,20 +103,29 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
   return getValueEndIndexByType(sourceStr, checkingIndex, levelType!)
 }
 
+/**
+ * read current level and form next level data
+ * @param path reading file path
+ * @param levelInfo current checking level info
+ * @returns
+ */
 export const generateLevelDiff = async (
   path: string,
-  levelInfo: DiffLevel
+  levelInfo?: DiffLevel
 ): Promise<DiffLevel[]> => {
-  let { startIndex, endIndex } = levelInfo
+  let { startIndex = 0, endIndex = undefined } = levelInfo || {}
 
   return readPartialFile({
     path,
     start: startIndex,
     end: endIndex
   }).then(levelStr => {
-    const levelDiffMap: Record<string, DiffLevel> = {}
+    // use array here to record json keys' order
+    const levelDiffArr: DiffLevel[] = []
 
     const levelType = getSectionType(levelStr[0])
+
+    const { length: stringLength } = levelStr
 
     if (!levelType) {
       throwErrorWithCode(
@@ -132,45 +135,65 @@ export const generateLevelDiff = async (
       )
     }
 
-    endIndex = endIndex - 1
+    endIndex = endIndex ? endIndex - 1 : stringLength
+
     let checkingIndex = (startIndex = startIndex + 1)
 
-    if ([DATA_TYPE.OBJECT, DATA_TYPE.STRING].includes(levelType!)) {
-      const attributeNameEndIndex = getStringEndIndex(levelStr, checkingIndex)
+    while (checkingIndex < stringLength) {
+      const levelDiff: Partial<DiffLevel> = {}
 
-      if (attributeNameEndIndex === -1) {
-        // exist current match process
-        throwErrorWithCode(
-          JSON_KEY_NOT_CLOSE,
-          JSON_KEY_NUMBER_STR_MIX_MSG,
-          checkingIndex.toString()
-        )
+      if ([DATA_TYPE.OBJECT].includes(levelType!)) {
+        const attributeNameEndIndex = getStringEndIndex(levelStr, checkingIndex)
+
+        if (attributeNameEndIndex === -1) {
+          // exist current match process
+          throwErrorWithCode(
+            JSON_KEY_NOT_CLOSE,
+            JSON_KEY_NUMBER_STR_MIX_MSG,
+            checkingIndex.toString()
+          )
+        }
+
+        levelDiff.attributeName = levelStr
+          .substring(checkingIndex, attributeNameEndIndex)
+          .trim()
+        checkingIndex = attributeNameEndIndex + 1
+
+        // find colon index in string
+        const valueStartIndex = getColonSpaceEndIndex(levelStr, checkingIndex)
+
+        if (valueStartIndex === -1) {
+          throwErrorWithCode(
+            JSON_COLON_MISS,
+            JSON_COLON_MISS_MSG,
+            checkingIndex.toString()
+          )
+        }
+
+        checkingIndex = valueStartIndex
+      } else if ([DATA_TYPE.ARRAY].includes(levelType!)) {
+        levelDiff.attributeName = levelDiffArr.length.toString()
       }
+      const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
-      curLoopLevelInfo.attributeName = levelStr.substring(
-        1 + checkingIndex,
-        attributeNameEndIndex
-      )
-      checkingIndex = attributeNameEndIndex + 1
+      levelDiff.startIndex = checkingIndex
+      levelDiff.endIndex = checkingIndex
+      levelDiff.type = getSectionType(levelStr[checkingIndex])
+      levelDiffArr.push(levelDiff as DiffLevel)
 
-      // find colon index in string
-      const valueStartIndex = getColonSpaceEndIndex(levelStr, checkingIndex)
-
-      if (valueStartIndex === -1) {
-        throwErrorWithCode(
-          JSON_COLON_MISS,
-          JSON_COLON_MISS_MSG,
-          checkingIndex.toString()
-        )
-      }
-
-      checkingIndex = valueStartIndex
+      checkingIndex = levelEnd
     }
-    const levelEnd = getValueEndIndex(levelStr, checkingIndex)
+
+    return levelDiffArr
   })
 }
 
 export const compareBasedOnPath = (
   referencePath: string,
   comparedFilePath: string
-) => {}
+) => {
+  Promise.all([
+    generateLevelDiff(referencePath),
+    generateLevelDiff(comparedFilePath)
+  ]).then(([referenceInfo, compareInfo]) => {})
+}
