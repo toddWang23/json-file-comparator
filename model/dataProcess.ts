@@ -8,7 +8,7 @@ export interface DiffLevel {
   startIndex: number
   endIndex: number
   type: DATA_TYPE
-  attributeName: string | symbol
+  attributeName: string
 }
 
 export enum DATA_TYPE {
