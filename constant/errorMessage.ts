@@ -8,3 +8,6 @@ export const JSON_VALUE_ILLEGAL_MSG = 'JSON value is not valid: '
 
 export const JSON_VALUE_EXTRA_MSG =
   'JSON value has not closed brace or square: '
+
+export const JSON_KEY_REPEAT_MSG =
+  'JSON key is repeated in compared file at index: '

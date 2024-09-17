@@ -1,4 +1,4 @@
-import { DiffLevel, DATA_TYPE } from 'model/dataProcess'
+import { JsonLevel, DATA_TYPE } from 'model/dataProcess'
 import { readPartialFile } from 'util/file'
 import { throwErrorWithCode } from 'util/error'
 import {
@@ -111,8 +111,8 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
  */
 export const generateLevelDiff = async (
   path: string,
-  levelInfo?: DiffLevel
-): Promise<DiffLevel[]> => {
+  levelInfo?: JsonLevel
+): Promise<JsonLevel[]> => {
   let { startIndex = 0, endIndex = undefined } = levelInfo || {}
 
   return readPartialFile({
@@ -121,7 +121,7 @@ export const generateLevelDiff = async (
     end: endIndex
   }).then(levelStr => {
     // use array here to record json keys' order
-    const levelDiffArr: DiffLevel[] = []
+    const levelArr: JsonLevel[] = []
 
     const levelType = getSectionType(levelStr[0])
 
@@ -140,7 +140,7 @@ export const generateLevelDiff = async (
     let checkingIndex = (startIndex = startIndex + 1)
 
     while (checkingIndex < stringLength) {
-      const levelDiff: Partial<DiffLevel> = {}
+      const levelInfo: Partial<JsonLevel> = {}
 
       if ([DATA_TYPE.OBJECT].includes(levelType!)) {
         const attributeNameEndIndex = getStringEndIndex(levelStr, checkingIndex)
@@ -154,7 +154,7 @@ export const generateLevelDiff = async (
           )
         }
 
-        levelDiff.attributeName = levelStr
+        levelInfo.attributeName = levelStr
           .substring(checkingIndex, attributeNameEndIndex)
           .trim()
         checkingIndex = attributeNameEndIndex + 1
@@ -172,28 +172,27 @@ export const generateLevelDiff = async (
 
         checkingIndex = valueStartIndex
       } else if ([DATA_TYPE.ARRAY].includes(levelType!)) {
-        levelDiff.attributeName = levelDiffArr.length.toString()
+        levelInfo.attributeName = levelArr.length.toString()
       }
       const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
-      levelDiff.startIndex = checkingIndex
-      levelDiff.endIndex = checkingIndex
-      levelDiff.type = getSectionType(levelStr[checkingIndex])
-      levelDiffArr.push(levelDiff as DiffLevel)
+      levelInfo.startIndex = checkingIndex
+      levelInfo.endIndex = checkingIndex
+      levelInfo.type = getSectionType(levelStr[checkingIndex])
+      levelArr.push(levelInfo as JsonLevel)
 
       checkingIndex = levelEnd
     }
 
-    return levelDiffArr
+    return levelArr
   })
 }
 
-export const compareBasedOnPath = (
-  referencePath: string,
-  comparedFilePath: string
-) => {
-  Promise.all([
-    generateLevelDiff(referencePath),
-    generateLevelDiff(comparedFilePath)
-  ]).then(([referenceInfo, compareInfo]) => {})
-}
+// export const writeDataInLevel = () => {}
+
+// export const compareBasedOnPath = async (
+//   referencePath: string,
+//   comparedFilePath: string
+// ) => {
+
+// }

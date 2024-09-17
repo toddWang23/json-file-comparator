@@ -4,7 +4,7 @@ export interface RetrievalPositionSlice {
   end: number
 }
 
-export interface DiffLevel {
+export interface JsonLevel {
   startIndex: number
   endIndex: number
   type: DATA_TYPE

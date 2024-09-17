@@ -18,3 +18,6 @@ export const JSON_VALUE_ILLEGAL = 100304
 
 // JSON value symbol has not closed one
 export const JSON_VALUE_EXTRA_SYMBOL = 100305
+
+// key is repeated in a level
+export const JSON_KEY_REPEAT = 100306

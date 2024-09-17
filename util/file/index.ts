@@ -1,4 +1,4 @@
-import { createReadStream, writeFile } from 'fs'
+import { createReadStream, createWriteStream, writeFile } from 'fs'
 import { access, constants } from 'fs'
 import { FileReadOption } from './type'
 
@@ -72,3 +72,24 @@ export const writeStringIntoFile = (
       }
     )
   })
+
+export const writeFileBasedIndex = (
+  toPath: string,
+  fromPath: string,
+  startIndex: number,
+  endIndex: number
+) => {
+  const fileReadStream = createReadStream(fromPath, {
+    start: startIndex,
+    end: endIndex
+  })
+
+  const fileWriteStream = createWriteStream(toPath)
+
+  fileReadStream.pipe(fileWriteStream)
+
+  return new Promise((resolve, reject) => {
+    fileReadStream.on('error', reject)
+    fileReadStream.on('end', resolve)
+  })
+}
