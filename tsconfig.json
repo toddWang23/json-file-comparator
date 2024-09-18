@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./",
     "composite": true,
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -20,11 +20,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "tsconfig.json"],
-  "include": ["**/*.ts", "**/*.d.ts"]
+  "include": ["**/*.ts", "**/*.d.ts", "jest.config.mjs"]
 }

@@ -10,7 +10,7 @@ import { FileReadOption } from './type'
 export const isValidPath = (filePath: string): Promise<boolean> =>
   new Promise(resolve =>
     access(filePath, constants.R_OK, err => {
-      resolve(!!err)
+      resolve(!err)
     })
   )
 
@@ -89,7 +89,12 @@ export const writeFileBasedIndex = (
   fileReadStream.pipe(fileWriteStream)
 
   return new Promise((resolve, reject) => {
-    fileReadStream.on('error', reject)
-    fileReadStream.on('end', resolve)
+    fileReadStream.on('data', data => console.log(data.toString()))
+    fileReadStream.on('error', err => {
+      reject(err)
+    })
+    fileReadStream.on('end', () => {
+      resolve(undefined)
+    })
   })
 }

@@ -4,13 +4,11 @@ import { throwErrorWithCode } from 'util/error'
 import {
   JSON_COLON_MISS,
   JSON_KEY_NOT_CLOSE,
-  JSON_VALUE_ILLEGAL
-} from 'constant'
-import {
+  JSON_VALUE_ILLEGAL,
   JSON_COLON_MISS_MSG,
   JSON_KEY_NUMBER_STR_MIX_MSG,
   JSON_VALUE_ILLEGAL_MSG
-} from 'constant/errorMessage'
+} from 'constant'
 import { getValueEndIndexByType } from './util/valueProcessor'
 import { getSectionType } from './util/dataType'
 
@@ -187,12 +185,3 @@ export const generateLevelDiff = async (
     return levelArr
   })
 }
-
-// export const writeDataInLevel = () => {}
-
-// export const compareBasedOnPath = async (
-//   referencePath: string,
-//   comparedFilePath: string
-// ) => {
-
-// }

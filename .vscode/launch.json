@@ -1,0 +1,35 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest Tests",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "-r tsconfig-paths/register",
+        "-r ts-node/register",
+        "--runInBand"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      // "disableOptimisticBPs": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "jest test per file",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "jest",
+        "--runInBand",
+        "${workspaceFolder}/util/error/index.test.ts"
+      ],
+      "protocol": "inspector"
+    }
+  ]
+}
