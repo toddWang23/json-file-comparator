@@ -13,13 +13,16 @@ const config = {
     'util/(.*)': '<rootDir>/util/$1',
     constant: '<rootDir>/constant'
   },
-  extensionsToTreatAsEsm: ['.ts'],
+  // extensionsToTreatAsEsm: ['.ts'],
   transform: {
     '^.+\\.ts?$': [
       'babel-jest',
       { configFile: path.resolve(__dirname, 'babel.config.js') }
     ]
-  }
+  },
+  transformIgnorePatterns: [
+    'constant/'
+  ]
 }
 
 export default config
