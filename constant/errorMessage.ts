@@ -11,3 +11,6 @@ export const JSON_VALUE_EXTRA_MSG =
 
 export const JSON_KEY_REPEAT_MSG =
   'JSON key is repeated in compared file at index: '
+
+export const JSON_KEY_NO_QUOTE_PREFIX_MSG =
+  'extra character appears before JSON key at index: '

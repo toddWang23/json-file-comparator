@@ -21,3 +21,6 @@ export const JSON_VALUE_EXTRA_SYMBOL = 100305
 
 // key is repeated in a level
 export const JSON_KEY_REPEAT = 100306
+
+// non-quote start for json key
+export const JSON_KEY_NO_QUOTE_PREFIX = 100307

@@ -27,7 +27,7 @@
       "runtimeArgs": [
         "jest",
         "--runInBand",
-        "${workspaceFolder}/util/error/index.test.ts"
+        "${workspaceFolder}/core/test/fileDiff.test.ts"
       ],
       "protocol": "inspector"
     }

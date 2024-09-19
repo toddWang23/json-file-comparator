@@ -23,5 +23,5 @@
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "tsconfig.json"],
-  "include": ["**/*.ts", "**/*.d.ts", "jest.config.mjs"]
+  "include": ["**/*.ts", "**/*.d.ts", "jest.config.ts"]
 }

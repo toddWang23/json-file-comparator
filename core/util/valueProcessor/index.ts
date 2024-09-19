@@ -1,7 +1,8 @@
-import { JSON_VALUE_EXTRA_SYMBOL } from 'constant'
+import { JSON_VALUE_EXTRA_SYMBOL } from 'constant/errCode'
 import { JSON_VALUE_EXTRA_MSG } from 'constant/errorMessage'
 import { DATA_TYPE } from 'model/dataProcess'
 import { throwErrorWithCode } from 'util/error'
+import { isValidSymbol } from '../char'
 
 /**
  * search level end comma and empty string from `startIndex`
@@ -48,6 +49,7 @@ export const getNumberValueEndIndex = (
  * search string end index start from `startIndex`
  * @param sourceStr search string
  * @param startIndex search start index
+ *
  */
 export const getValueEndIndexByType = (
   sourceStr: string,
@@ -58,7 +60,8 @@ export const getValueEndIndexByType = (
     return getNumberValueEndIndex(sourceStr, startIndex)
   }
 
-  let iterateIndex = startIndex
+  // number type value should not shift, so do it after type evaluation
+  let iterateIndex = startIndex + 1
   const { length } = sourceStr
 
   // rest not matched brace counter, act as stack
@@ -73,17 +76,19 @@ export const getValueEndIndexByType = (
   let lastChar
   // match all the string and blank character
   while (iterateIndex < length) {
-    if (sourceStr[iterateIndex] === '"' && lastChar !== '\\') {
+    const curChar = sourceStr[iterateIndex]
+
+    if (isValidSymbol(sourceStr[iterateIndex], lastChar, '"')) {
       restMarkCounter[DATA_TYPE.STRING] = 1 - restMarkCounter[DATA_TYPE.STRING]
       // if symbols are between quotes, they are all omitted.
     } else if (restMarkCounter[DATA_TYPE.STRING] === 0) {
-      if (sourceStr[iterateIndex] === '{' && lastChar !== '\\') {
+      if (isValidSymbol(sourceStr[iterateIndex], lastChar, '{')) {
         restMarkCounter[DATA_TYPE.OBJECT]++
-      } else if (sourceStr[iterateIndex] === '}' && lastChar !== '\\') {
+      } else if (isValidSymbol(sourceStr[iterateIndex], lastChar, '}')) {
         restMarkCounter[DATA_TYPE.OBJECT]--
-      } else if (sourceStr[iterateIndex] === '[' && lastChar !== '\\') {
+      } else if (isValidSymbol(sourceStr[iterateIndex], lastChar, '[')) {
         restMarkCounter[DATA_TYPE.ARRAY]++
-      } else if (sourceStr[iterateIndex] === ']' && lastChar !== '\\') {
+      } else if (isValidSymbol(sourceStr[iterateIndex], lastChar, ']')) {
         restMarkCounter[DATA_TYPE.ARRAY]--
       }
     }
@@ -101,21 +106,23 @@ export const getValueEndIndexByType = (
     }
 
     if (
-      restMarkCounter[DATA_TYPE.ARRAY] === 0 ||
-      restMarkCounter[DATA_TYPE.OBJECT] === 0 ||
-      restMarkCounter[DATA_TYPE.ARRAY] === 0
+      restMarkCounter[DATA_TYPE.ARRAY] === 0 &&
+      restMarkCounter[DATA_TYPE.OBJECT] === 0 &&
+      restMarkCounter[DATA_TYPE.STRING] === 0
     ) {
       // return iterateIndex
       break
     }
 
-    lastChar = sourceStr[iterateIndex++]
+    lastChar = curChar
+    iterateIndex++
   }
 
   // end of the file
-  if (length === iterateIndex) {
+  if (length - 1 === iterateIndex) {
     return iterateIndex
   }
 
-  return getValueEndIndex(sourceStr, iterateIndex)
+  // return getValueEndIndex(sourceStr, iterateIndex + 1)
+  return iterateIndex
 }

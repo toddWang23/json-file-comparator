@@ -3,29 +3,36 @@ import { readPartialFile } from 'util/file'
 import { throwErrorWithCode } from 'util/error'
 import {
   JSON_COLON_MISS,
+  JSON_KEY_NO_QUOTE_PREFIX,
   JSON_KEY_NOT_CLOSE,
-  JSON_VALUE_ILLEGAL,
+  JSON_VALUE_ILLEGAL
+} from 'constant/errCode'
+import {
   JSON_COLON_MISS_MSG,
+  JSON_KEY_NO_QUOTE_PREFIX_MSG,
   JSON_KEY_NUMBER_STR_MIX_MSG,
   JSON_VALUE_ILLEGAL_MSG
-} from 'constant'
+} from 'constant/errorMessage'
 import { getValueEndIndexByType } from './util/valueProcessor'
 import { getSectionType } from './util/dataType'
+import { getNextValidCharIndex } from './util'
 
 /**
- * loop the JSON string from start index, find name
+ * loop the JSON string from start index, find key name wrapped by quote pair
  * @param sourceStr json string file
  * @param startIndex check start index
- * @returns
+ * @returns {key: string, endIndex: number}
  */
-const getStringEndIndex = (sourceStr: string, startIndex: number) => {
+const getKeyNameNdIndex = (
+  sourceStr: string,
+  startIndex: number
+): { key: string; endIndex: number } => {
   let checkingIndex = startIndex
   // cache char at last position for slash check
   let lastChar
 
-  let quoteCounter = 0
-
-  let levelKey = ''
+  // record start index of first half quote
+  let quoteStartIndex = -1
 
   for (; checkingIndex < sourceStr.length; checkingIndex++) {
     let char = sourceStr[checkingIndex]
@@ -34,29 +41,33 @@ const getStringEndIndex = (sourceStr: string, startIndex: number) => {
       continue
     }
 
-    // everything between quote is ignored
-    if (char === '"' && lastChar !== '\\') {
-      quoteCounter = 1 - quoteCounter
-    }
-
     //  if the matched char is ", and match quote pair is empty, then the name is found and matched.
-    if (char === '"' && lastChar !== '\\' && !quoteCounter) {
-      // search the following colon and ignore it when matching value
-      // do {
-      //   char = sourceStr[++checkingIndex]
-      // } while (/\s/.test(char) || char === ':')
-
-      return checkingIndex
-    } else if (quoteCounter) {
-      // if the quote is not closed, the char should be included into name.
-      levelKey += char
+    if (char === '"' && lastChar !== '\\') {
+      if (quoteStartIndex === -1) {
+        quoteStartIndex = checkingIndex
+      } else {
+        return {
+          key: sourceStr.substring(quoteStartIndex + 1, checkingIndex),
+          endIndex: checkingIndex
+        }
+      }
+    } else if (quoteStartIndex === -1) {
+      // some non-quote character appears before quote
+      throwErrorWithCode(
+        JSON_KEY_NO_QUOTE_PREFIX,
+        JSON_KEY_NO_QUOTE_PREFIX_MSG,
+        checkingIndex.toString()
+      )
     }
 
     // not appropriate when end of name match, but not matter
     lastChar = char
   }
 
-  return -1
+  return {
+    key: '',
+    endIndex: -1
+  }
 }
 
 /**
@@ -81,8 +92,6 @@ const getColonSpaceEndIndex = (sourceStr: string, startIndex: number) => {
 const getValueEndIndex = (sourceStr: string, startIndex: number) => {
   let checkingIndex = startIndex
 
-  let levelType: DATA_TYPE
-
   // find the first valid character
   while (/\s/.test(sourceStr[checkingIndex])) {
     checkingIndex++
@@ -98,7 +107,7 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
     )
   }
 
-  return getValueEndIndexByType(sourceStr, checkingIndex, levelType!)
+  return getValueEndIndexByType(sourceStr, checkingIndex, sectionType!)
 }
 
 /**
@@ -133,15 +142,22 @@ export const generateLevelDiff = async (
       )
     }
 
-    endIndex = endIndex ? endIndex - 1 : stringLength
-
+    // last character is included at end index for current level
+    endIndex = endIndex ? endIndex : stringLength
+    // first character is only used for category check
     let checkingIndex = (startIndex = startIndex + 1)
 
-    while (checkingIndex < stringLength) {
+    while (checkingIndex < endIndex) {
       const levelInfo: Partial<JsonLevel> = {}
+      checkingIndex = getNextValidCharIndex(levelStr, checkingIndex)
 
       if ([DATA_TYPE.OBJECT].includes(levelType!)) {
-        const attributeNameEndIndex = getStringEndIndex(levelStr, checkingIndex)
+        // check is level end and closed
+        if (levelStr[checkingIndex] === '}') {
+          break
+        }
+        const { endIndex: attributeNameEndIndex, key: levelAttributeName } =
+          getKeyNameNdIndex(levelStr, checkingIndex)
 
         if (attributeNameEndIndex === -1) {
           // exist current match process
@@ -152,9 +168,7 @@ export const generateLevelDiff = async (
           )
         }
 
-        levelInfo.attributeName = levelStr
-          .substring(checkingIndex, attributeNameEndIndex)
-          .trim()
+        levelInfo.attributeName = levelAttributeName.trim()
         checkingIndex = attributeNameEndIndex + 1
 
         // find colon index in string
@@ -170,16 +184,21 @@ export const generateLevelDiff = async (
 
         checkingIndex = valueStartIndex
       } else if ([DATA_TYPE.ARRAY].includes(levelType!)) {
-        levelInfo.attributeName = levelArr.length.toString()
+        // end of current level
+        if (levelStr[checkingIndex] === ']') {
+          break
+        }
+
+        levelInfo.attributeName = `[${levelArr.length.toString()}]`
       }
       const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
       levelInfo.startIndex = checkingIndex
-      levelInfo.endIndex = checkingIndex
+      levelInfo.endIndex = levelEnd
       levelInfo.type = getSectionType(levelStr[checkingIndex])
       levelArr.push(levelInfo as JsonLevel)
 
-      checkingIndex = levelEnd
+      checkingIndex = getNextValidCharIndex(levelStr, levelEnd + 1, ',')
     }
 
     return levelArr

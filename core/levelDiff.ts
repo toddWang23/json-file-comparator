@@ -1,4 +1,4 @@
-import { JSON_KEY_REPEAT } from 'constant'
+import { JSON_KEY_REPEAT } from 'constant/errCode'
 import { JSON_KEY_REPEAT_MSG } from 'constant/errorMessage'
 import { DATA_TYPE, JsonLevel } from 'model/dataProcess'
 import { DIFF_RESULT, LevelDiffResult } from 'model/diff'
