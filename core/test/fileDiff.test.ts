@@ -31,7 +31,83 @@ it('generateLevelDiff: get object base level info', () => {
 
       expect(element.attributeName).toBe('[0]')
       expect(element.type).toBe('array')
-      expect(element.startIndex).toBe(27)
-      expect(element.endIndex).toBe(31)
+      expect(element.startIndex).toBe(47)
+      expect(element.endIndex).toBe(135)
+
+      return generateLevelDiff(filePath, element)
+    })
+    .then(data => {
+      expect(data.length).toBe(2)
+
+      const [firstElement, secondElement] = data
+
+      expect(firstElement.attributeName).toBe('[0]')
+      expect(firstElement.type).toBe('array')
+      expect(firstElement.startIndex).toBe(55)
+      expect(firstElement.endIndex).toBe(69)
+
+      expect(secondElement.attributeName).toBe('[1]')
+      expect(secondElement.type).toBe('object')
+      expect(secondElement.startIndex).toBe(78)
+      expect(secondElement.endIndex).toBe(129)
+
+      return Promise.all([
+        generateLevelDiff(filePath, firstElement),
+        generateLevelDiff(filePath, secondElement)
+      ])
+    })
+    .then(dataArr => {
+      const [[firstElement], [secondElement, thirdElement]] = dataArr
+
+      expect(firstElement).toBe('[0]')
+      expect(firstElement.type).toBe('array')
+      expect(firstElement.startIndex).toBe(56)
+      expect(firstElement.endIndex).toBe(68)
+
+      expect(secondElement.attributeName).toBe('asdas')
+      expect(secondElement.type).toBe('string')
+      expect(secondElement.startIndex).toBe(97)
+      expect(secondElement.endIndex).toBe(103)
+
+      expect(thirdElement.attributeName).toBe('a1')
+      expect(thirdElement.type).toBe('number')
+      expect(thirdElement.startIndex).toBe(120)
+      expect(thirdElement.endIndex).toBe(121)
+
+      return Promise.all([
+        generateLevelDiff(filePath, firstElement),
+        generateLevelDiff(filePath, secondElement),
+        generateLevelDiff(filePath, thirdElement)
+      ])
+    })
+    .then(dataArr => {
+      const [[firstElement, secondElement], [thirdElement], [firthElement]] =
+        dataArr
+
+      expect(firstElement).toBe('[0]')
+      expect(firstElement.type).toBe('number')
+      expect(firstElement.startIndex).toBe(57)
+      expect(firstElement.endIndex).toBe(59)
+
+      expect(secondElement).toBe('[1]')
+      expect(secondElement.type).toBe('string')
+      expect(secondElement.startIndex).toBe(62)
+      expect(secondElement.endIndex).toBe(67)
+
+      expect(thirdElement.attributeName).toBe('asdas')
+      expect(thirdElement.type).toBe('string')
+      expect(thirdElement.startIndex).toBe(97)
+      expect(thirdElement.endIndex).toBe(103)
+
+      expect(firthElement.attributeName).toBe('a1')
+      expect(firthElement.type).toBe('number')
+      expect(firthElement.startIndex).toBe(120)
+      expect(firthElement.endIndex).toBe(121)
+
+      return Promise.all([
+        generateLevelDiff(filePath, firstElement),
+        generateLevelDiff(filePath, secondElement),
+        generateLevelDiff(filePath, thirdElement)
+      ])
     })
 })

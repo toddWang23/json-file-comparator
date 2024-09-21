@@ -120,7 +120,7 @@ export const generateLevelDiff = async (
   path: string,
   levelInfo?: JsonLevel
 ): Promise<JsonLevel[]> => {
-  let { startIndex = 0, endIndex = undefined } = levelInfo || {}
+  const { startIndex = 0, endIndex = undefined, type } = levelInfo || {}
 
   return readPartialFile({
     path,
@@ -130,7 +130,7 @@ export const generateLevelDiff = async (
     // use array here to record json keys' order
     const levelArr: JsonLevel[] = []
 
-    const levelType = getSectionType(levelStr[0])
+    const levelType = type || getSectionType(levelStr[0])
 
     const { length: stringLength } = levelStr
 
@@ -143,13 +143,13 @@ export const generateLevelDiff = async (
     }
 
     // last character is included at end index for current level
-    endIndex = endIndex ? endIndex : stringLength
-    // first character is only used for category check
-    let checkingIndex = (startIndex = startIndex + 1)
 
-    while (checkingIndex < endIndex) {
+    // first character is only used for category check
+    let checkingIndex = 1
+    checkingIndex = getNextValidCharIndex(levelStr, checkingIndex)
+
+    while (checkingIndex < stringLength) {
       const levelInfo: Partial<JsonLevel> = {}
-      checkingIndex = getNextValidCharIndex(levelStr, checkingIndex)
 
       if ([DATA_TYPE.OBJECT].includes(levelType!)) {
         // check is level end and closed
@@ -193,8 +193,8 @@ export const generateLevelDiff = async (
       }
       const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
-      levelInfo.startIndex = checkingIndex
-      levelInfo.endIndex = levelEnd
+      levelInfo.startIndex = checkingIndex + startIndex
+      levelInfo.endIndex = levelEnd + startIndex
       levelInfo.type = getSectionType(levelStr[checkingIndex])
       levelArr.push(levelInfo as JsonLevel)
 

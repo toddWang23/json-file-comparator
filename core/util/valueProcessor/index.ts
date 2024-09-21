@@ -33,16 +33,15 @@ export const getNumberValueEndIndex = (
   const { length } = sourceStr
 
   // match all the number and blank character
-  while (iterateIndex < length && !isNaN(Number(sourceStr[iterateIndex]))) {
+  while (
+    iterateIndex < length &&
+    !/\s/.test(sourceStr[iterateIndex]) &&
+    !isNaN(Number(sourceStr[iterateIndex]))
+  ) {
     iterateIndex++
   }
 
-  // end of the file
-  if (length === iterateIndex) {
-    return iterateIndex
-  }
-
-  return getValueEndIndex(sourceStr, --iterateIndex)
+  return iterateIndex - 1
 }
 
 /**

@@ -5,8 +5,8 @@ export interface RetrievalPositionSlice {
 }
 
 export interface JsonLevel {
-  startIndex: number
-  endIndex: number
+  startIndex: number // included the first character, like for object, the endIndex is '}'
+  endIndex: number // included the last character,like for array, the endIndex should be ']'.
   type: DATA_TYPE
   attributeName: string
 }
