@@ -125,8 +125,16 @@ export const compareDataInLevel = async (
         })
       }
     } else {
+      const diffType = isMoved
+        ? isComparableType
+          ? DIFF_RESULT.MOVED_CHANGE
+          : DIFF_RESULT.MOVED
+        : isComparableType
+          ? DIFF_RESULT.VALUE_CHANGE
+          : DIFF_RESULT.UNDEFINED
+
       result.push({
-        type: isMoved ? DIFF_RESULT.MOVED_CHANGE : DIFF_RESULT.VALUE_CHANGE,
+        type: diffType,
         attribute: compareAttrName,
         isLeaf: isComparableType,
         refStartFileIndex: referenceStartIndex,

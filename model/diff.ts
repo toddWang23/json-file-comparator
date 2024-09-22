@@ -5,7 +5,8 @@ export enum DIFF_RESULT {
   REMOVED, // node is removed compared with previous node
   MOVED, // node is moved compared with previous node
   VALUE_CHANGE, // leaf node value changed
-  MOVED_CHANGE
+  MOVED_CHANGE,
+  UNDEFINED // still has leaves, diff result not determined
 }
 
 export interface LevelDiffResult {

@@ -24,6 +24,11 @@ export const compareLevelWrite2File = async (
 
   const nextLevelStack: Array<NextLevelTask> = []
 
+  // some nodes not written as not leaf
+  const unchangedPath = new Set()
+
+  const movePath = new Set()
+
   // string waiting to be written to file
   let buffer = Buffer.alloc(WRITE_BUFFER_SIZE)
   buffer.write('{')
@@ -61,11 +66,16 @@ export const compareLevelWrite2File = async (
         isLeaf
       } = levelResult
       switch (type) {
+        // need children node compare value to determine it's changed
+        case DIFF_RESULT.UNDEFINED:
+          unchangedPath.add(`${jsonPath}.${attribute}`)
+          break
         case DIFF_RESULT.MOVED_CHANGE:
           buffer.write(`"${jsonPath}.${attribute}":{"prevIndex": ${prevIndex}, 
 "changedIndex": ${changedIndex}, "prevValue": `)
         case DIFF_RESULT.VALUE_CHANGE:
           buffer.write(`"${jsonPath}.${attribute}":{"prevValue": `)
+          // TODO: check ancestor whether need to be added
           await writeStringIntoFile(outputPath, buffer.toString())
           await writeFileBasedIndex(
             outputPath,
@@ -82,24 +92,24 @@ export const compareLevelWrite2File = async (
             compareEndFileIndex!
           )
 
-          if (!isLeaf) {
-            const refNode = referenceLevels.find(
-              v => v.attributeName === attribute
-            )
-            const compareNode = compareLevels.find(
-              v => v.attributeName === attribute
-            )
+          // if (!isLeaf) {
+          //   const refNode = referenceLevels.find(
+          //     v => v.attributeName === attribute
+          //   )
+          //   const compareNode = compareLevels.find(
+          //     v => v.attributeName === attribute
+          //   )
 
-            const nextLevelJsonPath = `${jsonPath}.${attribute}`
+          //   const nextLevelJsonPath = `${jsonPath}.${attribute}`
 
-            refNode &&
-              compareNode &&
-              nextLevelStack.push({
-                jsonPath: nextLevelJsonPath,
-                nextCompare: compareNode,
-                nextReference: refNode
-              })
-          }
+          //   refNode &&
+          //     compareNode &&
+          //     nextLevelStack.push({
+          //       jsonPath: nextLevelJsonPath,
+          //       nextCompare: compareNode,
+          //       nextReference: refNode
+          //     })
+          // }
           break
         case DIFF_RESULT.MOVED:
           buffer.write(

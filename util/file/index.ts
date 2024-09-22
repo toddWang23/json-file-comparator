@@ -22,7 +22,7 @@ export const readPartialFile = (options: FileReadOption): Promise<string> => {
   const { path, start = 0, end = Infinity } = options
 
   const referenceRS = createReadStream(path, {
-    encoding: 'utf-8',
+    encoding: 'utf8',
     start,
     end
   })
@@ -89,7 +89,6 @@ export const writeFileBasedIndex = (
   fileReadStream.pipe(fileWriteStream)
 
   return new Promise((resolve, reject) => {
-    fileReadStream.on('data', data => console.log(data.toString()))
     fileReadStream.on('error', err => {
       reject(err)
     })

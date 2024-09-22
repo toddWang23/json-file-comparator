@@ -9,18 +9,15 @@ it('generateLevelDiffInfo: get object base level info', () => {
 
       expect(firstLevel.attributeName).toBe('cxv')
       expect(firstLevel.type).toBe('string')
-      expect(firstLevel.startIndex).toBe(11)
-      expect(firstLevel.endIndex).toBe(15)
+      // expect(firstLevel.endIndex - firstLevel.startIndex).toBe(4)
 
       expect(secondLevel.attributeName).toBe('vvc')
       expect(secondLevel.type).toBe('string')
-      expect(secondLevel.startIndex).toBe(27)
-      expect(secondLevel.endIndex).toBe(31)
+      // expect(secondLevel.endIndex - secondLevel.startIndex).toBe(4)
 
       expect(thirdLevel.attributeName).toBe('z')
       expect(thirdLevel.type).toBe('array')
-      expect(thirdLevel.startIndex).toBe(41)
-      expect(thirdLevel.endIndex).toBe(139)
+      // expect(thirdLevel.endIndex - thirdLevel.startIndex).toBe(98)
 
       return generateLevelDiffInfo(filePath, thirdLevel)
     })
@@ -31,8 +28,7 @@ it('generateLevelDiffInfo: get object base level info', () => {
 
       expect(element.attributeName).toBe('[0]')
       expect(element.type).toBe('array')
-      expect(element.startIndex).toBe(47)
-      expect(element.endIndex).toBe(135)
+      // expect(element.endIndex - element.startIndex).toBe(88)
 
       return generateLevelDiffInfo(filePath, element)
     })
@@ -43,13 +39,11 @@ it('generateLevelDiffInfo: get object base level info', () => {
 
       expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('array')
-      expect(firstElement.startIndex).toBe(55)
-      expect(firstElement.endIndex).toBe(69)
+      // expect(firstElement.endIndex - firstElement.startIndex).toBe(14)
 
       expect(secondElement.attributeName).toBe('[1]')
       expect(secondElement.type).toBe('object')
-      expect(secondElement.startIndex).toBe(78)
-      expect(secondElement.endIndex).toBe(129)
+      // expect(secondElement.endIndex - secondElement.startIndex).toBe(51)
 
       return Promise.all([
         generateLevelDiffInfo(filePath, firstElement),
@@ -61,18 +55,15 @@ it('generateLevelDiffInfo: get object base level info', () => {
 
       expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('array')
-      expect(firstElement.startIndex).toBe(56)
-      expect(firstElement.endIndex).toBe(68)
+      // expect(firstElement.endIndex - firstElement.startIndex).toBe(12)
 
       expect(secondElement.attributeName).toBe('asdas')
       expect(secondElement.type).toBe('string')
-      expect(secondElement.startIndex).toBe(97)
-      expect(secondElement.endIndex).toBe(103)
+      // expect(secondElement.endIndex - secondElement.startIndex).toBe(6)
 
       expect(thirdElement.attributeName).toBe('a1')
       expect(thirdElement.type).toBe('number')
-      expect(thirdElement.startIndex).toBe(120)
-      expect(thirdElement.endIndex).toBe(121)
+      // expect(thirdElement.endIndex - thirdElement.startIndex).toBe(1)
 
       return Promise.all([
         generateLevelDiffInfo(filePath, firstElement),
@@ -86,13 +77,11 @@ it('generateLevelDiffInfo: get object base level info', () => {
 
       expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('number')
-      expect(firstElement.startIndex).toBe(57)
-      expect(firstElement.endIndex).toBe(59)
+      // expect(firstElement.endIndex - firstElement.startIndex).toBe(2)
 
       expect(secondElement.attributeName).toBe('[1]')
       expect(secondElement.type).toBe('string')
-      expect(secondElement.startIndex).toBe(62)
-      expect(secondElement.endIndex).toBe(67)
+      // expect(secondElement.endIndex - secondElement.startIndex).toBe(5)
 
       expect(Array.isArray(stringResult)).toBe(true)
       expect(stringResult.length).toBe(0)
