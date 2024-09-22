@@ -6,6 +6,7 @@ const config: Config = {
   moduleNameMapper: {
     'model/(.*)': '<rootDir>/model/$1',
     '^util/(.*)': '<rootDir>/util/$1',
+    '^core/(.*)': '<rootDir>/core/$1',
     '^constant/(.*)': '<rootDir>/constant/$1'
   },
   extensionsToTreatAsEsm: ['.ts'],

@@ -3,7 +3,7 @@ import {
   writeFileBasedIndex,
   writeStringIntoFile
 } from 'util/file'
-import { generateLevelDiff } from './fileDiff'
+import { generateLevelDiffInfo } from './fileDiff'
 import { compareDataInLevel } from './levelDiff'
 import { NextLevelTask, SourceLevelDetail } from './type'
 import { Buffer } from 'node:buffer'
@@ -35,8 +35,8 @@ export const compareLevelWrite2File = async (
 
     // not catch errors to expose to caller
     const [referenceLevels, compareLevels] = await Promise.all([
-      generateLevelDiff(referenceSourcePath, referenceTask),
-      generateLevelDiff(compareSourcePath, compareTask)
+      generateLevelDiffInfo(referenceSourcePath, referenceTask),
+      generateLevelDiffInfo(compareSourcePath, compareTask)
     ])
 
     const levelResults = await compareDataInLevel(
@@ -137,8 +137,8 @@ export const compareLevelWrite2File = async (
     const { nextCompare, nextReference, jsonPath } = task
 
     const [nextRefTasks, nextCompareTasks] = await Promise.all([
-      generateLevelDiff(referenceSourcePath, nextReference),
-      generateLevelDiff(compareSourcePath, nextCompare)
+      generateLevelDiffInfo(referenceSourcePath, nextReference),
+      generateLevelDiffInfo(compareSourcePath, nextCompare)
     ])
 
     compareLevelWrite2File(
@@ -162,8 +162,8 @@ export const compareFileWrite2File = async (
   outputPath: string
 ) => {
   const [refFirstLevel, compareFirstLevel] = await Promise.all([
-    generateLevelDiff(referencePath),
-    generateLevelDiff(comparePath)
+    generateLevelDiffInfo(referencePath),
+    generateLevelDiffInfo(comparePath)
   ])
 
   compareLevelWrite2File(

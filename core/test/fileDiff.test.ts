@@ -1,9 +1,9 @@
 import path from 'path'
-import { generateLevelDiff } from '../fileDiff'
+import { generateLevelDiffInfo } from '../fileDiff'
 
-it('generateLevelDiff: get object base level info', () => {
+it('generateLevelDiffInfo: get object base level info', () => {
   const filePath = path.join(__dirname, './compareFile.json')
-  return generateLevelDiff(filePath)
+  return generateLevelDiffInfo(filePath)
     .then(data => {
       const [firstLevel, secondLevel, thirdLevel] = data
 
@@ -22,7 +22,7 @@ it('generateLevelDiff: get object base level info', () => {
       expect(thirdLevel.startIndex).toBe(41)
       expect(thirdLevel.endIndex).toBe(139)
 
-      return generateLevelDiff(filePath, thirdLevel)
+      return generateLevelDiffInfo(filePath, thirdLevel)
     })
     .then(data => {
       expect(data.length).toBe(1)
@@ -34,7 +34,7 @@ it('generateLevelDiff: get object base level info', () => {
       expect(element.startIndex).toBe(47)
       expect(element.endIndex).toBe(135)
 
-      return generateLevelDiff(filePath, element)
+      return generateLevelDiffInfo(filePath, element)
     })
     .then(data => {
       expect(data.length).toBe(2)
@@ -52,14 +52,14 @@ it('generateLevelDiff: get object base level info', () => {
       expect(secondElement.endIndex).toBe(129)
 
       return Promise.all([
-        generateLevelDiff(filePath, firstElement),
-        generateLevelDiff(filePath, secondElement)
+        generateLevelDiffInfo(filePath, firstElement),
+        generateLevelDiffInfo(filePath, secondElement)
       ])
     })
     .then(dataArr => {
       const [[firstElement], [secondElement, thirdElement]] = dataArr
 
-      expect(firstElement).toBe('[0]')
+      expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('array')
       expect(firstElement.startIndex).toBe(56)
       expect(firstElement.endIndex).toBe(68)
@@ -75,39 +75,29 @@ it('generateLevelDiff: get object base level info', () => {
       expect(thirdElement.endIndex).toBe(121)
 
       return Promise.all([
-        generateLevelDiff(filePath, firstElement),
-        generateLevelDiff(filePath, secondElement),
-        generateLevelDiff(filePath, thirdElement)
+        generateLevelDiffInfo(filePath, firstElement),
+        generateLevelDiffInfo(filePath, secondElement),
+        generateLevelDiffInfo(filePath, thirdElement)
       ])
     })
     .then(dataArr => {
-      const [[firstElement, secondElement], [thirdElement], [firthElement]] =
+      const [[firstElement, secondElement], stringResult, numberResult] =
         dataArr
 
-      expect(firstElement).toBe('[0]')
+      expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('number')
       expect(firstElement.startIndex).toBe(57)
       expect(firstElement.endIndex).toBe(59)
 
-      expect(secondElement).toBe('[1]')
+      expect(secondElement.attributeName).toBe('[1]')
       expect(secondElement.type).toBe('string')
       expect(secondElement.startIndex).toBe(62)
       expect(secondElement.endIndex).toBe(67)
 
-      expect(thirdElement.attributeName).toBe('asdas')
-      expect(thirdElement.type).toBe('string')
-      expect(thirdElement.startIndex).toBe(97)
-      expect(thirdElement.endIndex).toBe(103)
+      expect(Array.isArray(stringResult)).toBe(true)
+      expect(stringResult.length).toBe(0)
 
-      expect(firthElement.attributeName).toBe('a1')
-      expect(firthElement.type).toBe('number')
-      expect(firthElement.startIndex).toBe(120)
-      expect(firthElement.endIndex).toBe(121)
-
-      return Promise.all([
-        generateLevelDiff(filePath, firstElement),
-        generateLevelDiff(filePath, secondElement),
-        generateLevelDiff(filePath, thirdElement)
-      ])
+      expect(Array.isArray(numberResult)).toBe(true)
+      expect(numberResult.length).toBe(0)
     })
 })

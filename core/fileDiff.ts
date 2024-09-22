@@ -116,7 +116,7 @@ const getValueEndIndex = (sourceStr: string, startIndex: number) => {
  * @param levelInfo current checking level info
  * @returns
  */
-export const generateLevelDiff = async (
+export const generateLevelDiffInfo = async (
   path: string,
   levelInfo?: JsonLevel
 ): Promise<JsonLevel[]> => {
@@ -190,6 +190,9 @@ export const generateLevelDiff = async (
         }
 
         levelInfo.attributeName = `[${levelArr.length.toString()}]`
+      } else {
+        // string and number has no children
+        return []
       }
       const levelEnd = getValueEndIndex(levelStr, checkingIndex)
 
