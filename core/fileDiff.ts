@@ -14,7 +14,7 @@ import {
   JSON_VALUE_ILLEGAL_MSG
 } from 'constant/errorMessage'
 import { getValueEndIndexByType } from './util/valueProcessor'
-import { getSectionType } from './util/dataType'
+import { getSectionType, hasChildNode } from './util/dataType'
 import { getNextValidCharIndex } from './util'
 
 /**
@@ -122,6 +122,11 @@ export const generateLevelDiffInfo = async (
 ): Promise<JsonLevel[]> => {
   const { startIndex = 0, endIndex = undefined, type } = levelInfo || {}
 
+  // if current node has no sub nodes
+  if (levelInfo && !hasChildNode(levelInfo)) {
+    return []
+  }
+
   return readPartialFile({
     path,
     start: startIndex,
@@ -192,6 +197,7 @@ export const generateLevelDiffInfo = async (
         levelInfo.attributeName = `[${levelArr.length.toString()}]`
       } else {
         // string and number has no children
+        // if file only has number/string
         return []
       }
       const levelEnd = getValueEndIndex(levelStr, checkingIndex)

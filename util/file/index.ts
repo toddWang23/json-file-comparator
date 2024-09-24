@@ -84,7 +84,9 @@ export const writeFileBasedIndex = (
     end: endIndex
   })
 
-  const fileWriteStream = createWriteStream(toPath)
+  const fileWriteStream = createWriteStream(toPath, {
+    flags: 'a+'
+  })
 
   fileReadStream.pipe(fileWriteStream)
 

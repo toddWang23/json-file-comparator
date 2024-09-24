@@ -1,4 +1,4 @@
-import { DATA_TYPE } from 'model/dataProcess'
+import { DATA_TYPE, JsonLevel } from 'model/dataProcess'
 
 /**
  * based on current character return section type
@@ -23,3 +23,11 @@ export const getSectionType = (char: string) => {
       }
   }
 }
+
+/**
+ * whether current node has child nodes
+ * @param node json node info
+ * @returns
+ */
+export const hasChildNode = (node: JsonLevel): boolean =>
+  [DATA_TYPE.ARRAY, DATA_TYPE.OBJECT].includes(node.type)

@@ -1,15 +1,8 @@
-import {
-  isValidPath,
-  writeFileBasedIndex,
-  writeStringIntoFile
-} from 'util/file'
+import { writeFileBasedIndex, writeStringIntoFile } from 'util/file'
 import { generateLevelDiffInfo } from './fileDiff'
 import { compareDataInLevel } from './levelDiff'
-import { NextLevelTask, SourceLevelDetail } from './type'
-import { Buffer } from 'node:buffer'
-import { WRITE_BUFFER_SIZE } from 'constant/file'
+import { SourceLevelDetail } from './type'
 import { DIFF_RESULT } from 'model/diff'
-import { JsonLevel } from 'model/dataProcess'
 
 export const compareLevelWrite2File = async (
   referenceDetail: SourceLevelDetail,
@@ -17,153 +10,221 @@ export const compareLevelWrite2File = async (
   outputPath: string,
   jsonPath: string
 ) => {
-  const { path: referenceSourcePath, levelInfo: referenceLevelInfo } =
+  const { path: referenceSourcePath, levelInfo: referenceTask } =
     referenceDetail
 
-  const { path: compareSourcePath, levelInfo: compareLevelInfo } = compareDetail
-
-  const nextLevelStack: Array<NextLevelTask> = []
-
-  // some nodes not written as not leaf
-  const unchangedPath = new Set()
-
-  const movePath = new Set()
+  const { path: compareSourcePath, levelInfo: compareTask } = compareDetail
 
   // string waiting to be written to file
-  let buffer = Buffer.alloc(WRITE_BUFFER_SIZE)
-  buffer.write('{')
+  let buffer: string[] = []
 
-  while (referenceLevelInfo.length && compareLevelInfo.length) {
-    const referenceTask = referenceLevelInfo.shift()
+  // not catch errors to expose to caller
+  const [referenceLevels, compareLevels] = await Promise.all([
+    generateLevelDiffInfo(referenceSourcePath, referenceTask),
+    generateLevelDiffInfo(compareSourcePath, compareTask)
+  ])
 
-    const compareTask = compareLevelInfo.shift()
+  const levelResults = await compareDataInLevel(
+    referenceLevels,
+    compareLevels,
+    referenceSourcePath,
+    compareSourcePath
+  )
 
-    // not catch errors to expose to caller
-    const [referenceLevels, compareLevels] = await Promise.all([
-      generateLevelDiffInfo(referenceSourcePath, referenceTask),
-      generateLevelDiffInfo(compareSourcePath, compareTask)
-    ])
+  const { length } = levelResults
 
-    const levelResults = await compareDataInLevel(
-      referenceLevels,
-      compareLevels,
-      referenceSourcePath,
-      compareSourcePath
-    )
-
-    // loop the level info and write it into file
-    for (let i = 0; i < levelResults.length; i++) {
-      const levelResult = levelResults[i]
-      const {
-        type,
-        attribute,
-        refEndFileIndex,
-        refStartFileIndex,
-        prevIndex,
-        changedIndex,
-        compareEndFileIndex,
-        compareStartFileIndex,
-        isLeaf
-      } = levelResult
-      switch (type) {
-        // need children node compare value to determine it's changed
-        case DIFF_RESULT.UNDEFINED:
-          unchangedPath.add(`${jsonPath}.${attribute}`)
-          break
-        case DIFF_RESULT.MOVED_CHANGE:
-          buffer.write(`"${jsonPath}.${attribute}":{"prevIndex": ${prevIndex}, 
+  // loop the level info and write it into file
+  for (let i = 0; i < length; i++) {
+    const levelResult = levelResults[i]
+    const {
+      type,
+      attribute,
+      refEndFileIndex,
+      refStartFileIndex,
+      prevIndex,
+      changedIndex,
+      compareEndFileIndex,
+      compareStartFileIndex,
+      isLeaf
+    } = levelResult
+    switch (type) {
+      case DIFF_RESULT.MOVED_CHANGE:
+        buffer.push(`"${jsonPath}.${attribute}":{"type": "move_change", "prevIndex": ${prevIndex}, 
 "changedIndex": ${changedIndex}, "prevValue": `)
-        case DIFF_RESULT.VALUE_CHANGE:
-          buffer.write(`"${jsonPath}.${attribute}":{"prevValue": `)
-          // TODO: check ancestor whether need to be added
-          await writeStringIntoFile(outputPath, buffer.toString())
-          await writeFileBasedIndex(
+
+        await writeStringIntoFile(outputPath, buffer.join(''))
+        buffer = []
+        await writeFileBasedIndex(
+          outputPath,
+          referenceSourcePath,
+          refStartFileIndex!,
+          refEndFileIndex!
+        )
+        await writeStringIntoFile(outputPath, `, "changedValue": "`)
+        buffer = []
+        await writeFileBasedIndex(
+          outputPath,
+          referenceSourcePath,
+          compareStartFileIndex!,
+          compareEndFileIndex!
+        )
+
+        // compare deeper nodes
+        if (!isLeaf) {
+          const refNode = referenceLevels.find(
+            v => v.attributeName === attribute
+          )
+          const compareNode = compareLevels.find(
+            v => v.attributeName === attribute
+          )
+
+          const nextLevelJsonPath = `${jsonPath}.${attribute}`
+
+          refNode &&
+            compareNode &&
+            (await compareLevelWrite2File(
+              {
+                path: referenceSourcePath,
+                levelInfo: refNode
+              },
+              {
+                path: compareSourcePath,
+                levelInfo: compareNode
+              },
+              outputPath,
+              nextLevelJsonPath
+            ))
+        }
+        // buffer.push('},')
+        await writeStringIntoFile(outputPath, `}${i !== length - 1 ? ',' : ''}`)
+        break
+
+      case DIFF_RESULT.VALUE_CHANGE:
+        buffer.push(
+          `"${jsonPath}.${attribute}":{"type": "value_change", "prevValue": `
+        )
+        await writeStringIntoFile(outputPath, buffer.join(''))
+        buffer = []
+        await writeFileBasedIndex(
+          outputPath,
+          referenceSourcePath,
+          refStartFileIndex!,
+          refEndFileIndex!
+        )
+        await writeStringIntoFile(outputPath, `, "changedValue": `)
+
+        await writeFileBasedIndex(
+          outputPath,
+          compareSourcePath,
+          compareStartFileIndex!,
+          compareEndFileIndex!
+        )
+
+        // compare deeper nodes
+        if (!isLeaf) {
+          const refNode = referenceLevels.find(
+            v => v.attributeName === attribute
+          )
+          const compareNode = compareLevels.find(
+            v => v.attributeName === attribute
+          )
+
+          const nextLevelJsonPath = `${jsonPath}.${attribute}`
+
+          refNode &&
+            compareNode &&
+            (await compareLevelWrite2File(
+              {
+                path: referenceSourcePath,
+                levelInfo: refNode
+              },
+              {
+                path: compareSourcePath,
+                levelInfo: compareNode
+              },
+              outputPath,
+              nextLevelJsonPath
+            ))
+        }
+        // buffer.push('},')
+        await writeStringIntoFile(outputPath, `}${i !== length - 1 ? ',' : ''}`)
+        break
+      case DIFF_RESULT.MOVED:
+        // buffer.push(
+        //   `"${jsonPath}.${attribute}": {"type": "move", "prevIndex": ${prevIndex}, "changedIndex": ${changedIndex}},`
+        // )
+        await writeStringIntoFile(
+          outputPath,
+          `"${jsonPath}.${attribute}": {"type": "move", "prevIndex": ${prevIndex}, "changedIndex": ${changedIndex}}${i !== length - 1 ? ',' : ''}`
+        )
+
+        break
+      case DIFF_RESULT.SAME:
+        break
+      case DIFF_RESULT.UNDEFINED:
+        const refNode = referenceLevels.find(v => v.attributeName === attribute)
+        const compareNode = compareLevels.find(
+          v => v.attributeName === attribute
+        )
+
+        const nextLevelJsonPath = `${jsonPath}.${attribute}`
+
+        refNode &&
+          compareNode &&
+          (await compareLevelWrite2File(
+            {
+              path: referenceSourcePath,
+              levelInfo: refNode
+            },
+            {
+              path: compareSourcePath,
+              levelInfo: compareNode
+            },
             outputPath,
-            referenceSourcePath,
-            refStartFileIndex!,
-            refEndFileIndex!
-          )
-          await writeStringIntoFile(outputPath, `, "changedValue": "`)
+            nextLevelJsonPath
+          ))
+        break
+      case DIFF_RESULT.ADD:
+        const fromPathAdd = compareSourcePath
+        const startIndexAdd = compareLevels[i].startIndex
+        const endIndexAdd = compareLevels[i].endIndex
+        buffer.push(`"${jsonPath}.${attribute}": {"type": "add", "content": `)
+        await writeStringIntoFile(outputPath, buffer.join(''))
+        buffer = []
+        await writeFileBasedIndex(
+          outputPath,
+          fromPathAdd,
+          startIndexAdd,
+          endIndexAdd
+        )
 
-          await writeFileBasedIndex(
-            outputPath,
-            referenceSourcePath,
-            compareStartFileIndex!,
-            compareEndFileIndex!
-          )
+        await writeStringIntoFile(outputPath, `}${i !== length - 1 ? ',' : ''}`)
+        break
+      case DIFF_RESULT.REMOVED:
+        const fromPathRemoved = referenceSourcePath
+        const startIndexRemoved = referenceLevels[i].startIndex
+        const endIndexRemoved = referenceLevels[i].endIndex
+        buffer.push(
+          `"${jsonPath}.${attribute}": {"type": "removed", "content": `
+        )
+        await writeStringIntoFile(outputPath, buffer.join(''))
+        buffer = []
+        await writeFileBasedIndex(
+          outputPath,
+          fromPathRemoved,
+          startIndexRemoved,
+          endIndexRemoved
+        )
 
-          // if (!isLeaf) {
-          //   const refNode = referenceLevels.find(
-          //     v => v.attributeName === attribute
-          //   )
-          //   const compareNode = compareLevels.find(
-          //     v => v.attributeName === attribute
-          //   )
+        await writeStringIntoFile(outputPath, `}${i !== length - 1 ? ',' : ''}`)
 
-          //   const nextLevelJsonPath = `${jsonPath}.${attribute}`
-
-          //   refNode &&
-          //     compareNode &&
-          //     nextLevelStack.push({
-          //       jsonPath: nextLevelJsonPath,
-          //       nextCompare: compareNode,
-          //       nextReference: refNode
-          //     })
-          // }
-          break
-        case DIFF_RESULT.MOVED:
-          buffer.write(
-            `"${jsonPath}.${attribute}": {"prevIndex": ${prevIndex}, "changedIndex": ${changedIndex}}`
-          )
-          break
-        case DIFF_RESULT.SAME:
-          // nothing
-          break
-        case DIFF_RESULT.ADD:
-        case DIFF_RESULT.REMOVED:
-          let fromPath, startIndex, endIndex
-          if (type === DIFF_RESULT.ADD) {
-            fromPath = compareSourcePath
-            startIndex = compareLevels[i].startIndex
-            endIndex = compareLevels[i].endIndex
-          } else {
-            fromPath = referenceSourcePath
-            startIndex = referenceLevels[i].startIndex
-            endIndex = referenceLevels[i].endIndex
-          }
-
-          await writeFileBasedIndex(outputPath, fromPath, startIndex, endIndex)
-          break
-        default:
-          break
-      }
+        break
+      default:
+        break
     }
-    buffer.write('}')
-
-    await writeStringIntoFile(outputPath, buffer.toString())
   }
 
-  nextLevelStack.map(async task => {
-    const { nextCompare, nextReference, jsonPath } = task
-
-    const [nextRefTasks, nextCompareTasks] = await Promise.all([
-      generateLevelDiffInfo(referenceSourcePath, nextReference),
-      generateLevelDiffInfo(compareSourcePath, nextCompare)
-    ])
-
-    compareLevelWrite2File(
-      {
-        path: referenceSourcePath,
-        levelInfo: nextRefTasks
-      },
-      {
-        path: compareSourcePath,
-        levelInfo: nextCompareTasks
-      },
-      outputPath,
-      jsonPath
-    )
-  })
+  await writeStringIntoFile(outputPath, buffer.join(''))
 }
 
 export const compareFileWrite2File = async (
@@ -171,21 +232,18 @@ export const compareFileWrite2File = async (
   comparePath: string,
   outputPath: string
 ) => {
-  const [refFirstLevel, compareFirstLevel] = await Promise.all([
-    generateLevelDiffInfo(referencePath),
-    generateLevelDiffInfo(comparePath)
-  ])
+  await writeStringIntoFile(outputPath, '{')
 
-  compareLevelWrite2File(
+  await compareLevelWrite2File(
     {
-      path: referencePath,
-      levelInfo: refFirstLevel
+      path: referencePath
     },
     {
-      path: comparePath,
-      levelInfo: compareFirstLevel
+      path: comparePath
     },
     outputPath,
     '$'
   )
+
+  await writeStringIntoFile(outputPath, '}')
 }

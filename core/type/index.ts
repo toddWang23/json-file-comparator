@@ -2,7 +2,7 @@ import { JsonLevel } from 'model/dataProcess'
 
 export interface SourceLevelDetail {
   path: string
-  levelInfo: Array<JsonLevel>
+  levelInfo?: JsonLevel
 }
 
 export interface NextLevelTask {
