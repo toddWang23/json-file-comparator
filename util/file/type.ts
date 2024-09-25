@@ -3,3 +3,11 @@ export interface FileReadOption {
   start?: number
   end?: number
 }
+
+export type WritableData =
+  | {
+      fromPath: string
+      startIndex?: number
+      endIndex?: number
+    }
+  | string

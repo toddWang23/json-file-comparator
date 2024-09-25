@@ -4,7 +4,7 @@ import {
   readPartialFile,
   writeFileBasedIndex,
   writeStringIntoFile
-} from './index'
+} from '../index'
 import { readFile, rmSync, writeFile } from 'fs'
 
 beforeEach(() => {

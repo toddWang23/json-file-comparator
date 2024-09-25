@@ -1,6 +1,6 @@
 import { createReadStream, createWriteStream, writeFile } from 'fs'
 import { access, constants } from 'fs'
-import { FileReadOption } from './type'
+import { FileReadOption, WritableData } from './type'
 
 /**
  * check path passed-in is valid or not
@@ -96,6 +96,36 @@ export const writeFileBasedIndex = (
     })
     fileReadStream.on('end', () => {
       resolve(undefined)
+    })
+  })
+}
+
+/**
+ * write bunch of string into file. it could be string content or partial file
+ * @param writePath file path to write in
+ * @param writableArr write content config
+ * @param isAppend is appending to file
+ * @returns resolved when writing end
+ */
+export const writeBunchInfo2File = async (
+  writePath: string,
+  writableArr: WritableData[],
+  isAppend: boolean = false
+) => {
+  const combinedReadStream = formReadableSeries(writableArr)
+
+  const fileWriteStream = createWriteStream(writePath, {
+    flags: isAppend ? 'a+' : 'w+'
+  })
+
+  combinedReadStream.pipe(fileWriteStream)
+
+  return new Promise((resolve, reject) => {
+    combinedReadStream.on('end', () => {
+      resolve(undefined)
+    })
+    combinedReadStream.on('error', err => {
+      reject(err)
     })
   })
 }

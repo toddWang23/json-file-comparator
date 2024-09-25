@@ -1,1 +1,0 @@
-{"$.[1]":{"type": "value_change", "prevValue": 123, "changedValue": [1233, { "45": "awea" }]},"$.[2].[0]":{"type": "value_change", "prevValue": 1233, "changedValue": "test"},"$.[2].[1]": {"type": "removed", "content": { "45": "awea" }
