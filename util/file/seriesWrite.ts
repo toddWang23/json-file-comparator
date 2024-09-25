@@ -2,6 +2,9 @@ import { Readable } from 'stream'
 import CombinedStream from 'combined-stream'
 import { createReadStream, createWriteStream, WriteStream } from 'fs'
 import { WritableData } from './type'
+import { throwErrorWithCode } from 'util/error'
+import { WRITE_FILE_ERROR } from 'constant/errCode'
+import { WRITE_FILE_ERROR_MSG } from 'constant/errorMessage'
 
 /**
  * combine series of content into one readstream
@@ -40,35 +43,56 @@ const formReadableSeries = (readableArr: WritableData[]) => {
   return combinedReadStream
 }
 
-class FileWriteStack {
-  private taskQueueMap: Map<string, CombinedStream[]>
+export class FileWriteStack {
+  private taskQueue: CombinedStream[]
 
-  private writeStreamMap: Map<string, WriteStream>
+  private writeStream: WriteStream
 
-  constructor() {
-    this.taskQueueMap = new Map()
-    this.writeStreamMap = new Map()
+  // is writing content in
+  private isWriting: boolean
+
+  constructor(writePath: string) {
+    this.taskQueue = []
+    this.writeStream = createWriteStream(writePath, {
+      flags: 'w+'
+    })
+    this.isWriting = false
+  }
+
+  private performTask() {
+    // if another readstream is writing, wait for ongoing done to call it
+    if (this.isWriting) {
+      return
+    }
+
+    const task = this.taskQueue.shift()
+
+    if (task) {
+      task.pipe(this.writeStream, { end: false })
+
+      task.on('end', () => {
+        this.isWriting = false
+        this.performTask()
+      })
+
+      task.on('error', err => {
+        throwErrorWithCode(
+          WRITE_FILE_ERROR,
+          WRITE_FILE_ERROR_MSG,
+          err.message,
+          err.stack?.toString?.() || ''
+        )
+      })
+    }
   }
 
   /**
    * add content to stack and run processor
-   * @param writePath destination path
    * @param contentArr content need to be written to file
    */
-  pushReadStream(writePath: string, contentArr: WritableData[]) {
+  pushReadStream(contentArr: WritableData[]) {
     const combinedReadStream = formReadableSeries(contentArr)
-
-    if (this.taskQueueMap.has(writePath)) {
-      this.taskQueueMap.get(writePath)!.push(combinedReadStream)
-    } else {
-      this.taskQueueMap.set(writePath, [combinedReadStream])
-    }
-
-    if (!this.writeStreamMap.has(writePath)) {
-      const fileWriteStream = createWriteStream(writePath, {
-        flags: 'a+'
-      })
-      this.writeStreamMap.set(writePath, fileWriteStream)
-    }
+    this.taskQueue.push(combinedReadStream)
+    this.performTask()
   }
 }

@@ -14,3 +14,5 @@ export const JSON_KEY_REPEAT_MSG =
 
 export const JSON_KEY_NO_QUOTE_PREFIX_MSG =
   'extra character appears before JSON key at index: '
+
+export const WRITE_FILE_ERROR_MSG = 'error when write result into file: '

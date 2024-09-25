@@ -24,3 +24,6 @@ export const JSON_KEY_REPEAT = 100306
 
 // non-quote start for json key
 export const JSON_KEY_NO_QUOTE_PREFIX = 100307
+
+// write result into file error
+export const WRITE_FILE_ERROR = 1004
