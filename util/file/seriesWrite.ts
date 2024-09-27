@@ -6,6 +6,8 @@ import { throwErrorWithCode } from 'util/error'
 import { WRITE_FILE_ERROR } from 'constant/errCode'
 import { WRITE_FILE_ERROR_MSG } from 'constant/errorMessage'
 
+type WRITE_EVENT_TYPE = 'end'
+
 /**
  * combine series of content into one readstream
  * @param readableArr array of content config
@@ -43,7 +45,7 @@ const formReadableSeries = (readableArr: WritableData[]) => {
   return combinedReadStream
 }
 
-export class FileWriteStack {
+export class FileWriteSeriesProcessor {
   private taskQueue: CombinedStream[]
 
   private writeStream: WriteStream
@@ -51,19 +53,41 @@ export class FileWriteStack {
   // is writing content in
   private isWriting: boolean
 
+  private endCallbackArr: Array<() => void>
+
+  // called close function while still waiting for stream flush
+  private is2BClosed: boolean
+
   constructor(writePath: string) {
     this.taskQueue = []
     this.writeStream = createWriteStream(writePath, {
       flags: 'w+'
     })
     this.isWriting = false
+    this.is2BClosed = false
+    this.endCallbackArr = []
   }
 
+  /**
+   * close current stream and trigger close listen callback
+   */
+  closeStream() {
+    this.taskQueue = []
+    this.writeStream.close()
+    this.endCallbackArr.forEach(callback => callback())
+  }
+
+  /**
+   * flush existing task stack
+   * @returns
+   */
   private performTask() {
     // if another readstream is writing, wait for ongoing done to call it
-    if (this.isWriting) {
+    if (this.isWriting || !this.taskQueue.length) {
       return
     }
+
+    this.isWriting = true
 
     const task = this.taskQueue.shift()
 
@@ -72,7 +96,12 @@ export class FileWriteStack {
 
       task.on('end', () => {
         this.isWriting = false
-        this.performTask()
+
+        if (this.is2BClosed && !this.taskQueue.length) {
+          this.closeStream()
+        } else {
+          this.performTask()
+        }
       })
 
       task.on('error', err => {
@@ -83,6 +112,29 @@ export class FileWriteStack {
           err.stack?.toString?.() || ''
         )
       })
+    }
+  }
+
+  /**
+   * watch data and register to data callback
+   * @param event watched event name
+   * @param handler event callback
+   */
+  on(event: WRITE_EVENT_TYPE, handler: () => void) {
+    if (event === 'end') {
+      this.endCallbackArr.push(handler)
+    }
+  }
+
+  /**
+   * close write stream
+   * @param isAbandon should abandon queuing data from writing to file
+   */
+  close(isAbandon?: boolean) {
+    if (!this.isWriting || isAbandon) {
+      this.closeStream()
+    } else {
+      this.is2BClosed = true
     }
   }
 

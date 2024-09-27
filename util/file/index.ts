@@ -1,6 +1,6 @@
-import { createReadStream, createWriteStream, writeFile } from 'fs'
+import { createReadStream } from 'fs'
 import { access, constants } from 'fs'
-import { FileReadOption, WritableData } from './type'
+import { FileReadOption } from './type'
 
 /**
  * check path passed-in is valid or not
@@ -40,92 +40,6 @@ export const readPartialFile = (options: FileReadOption): Promise<string> => {
 
     referenceRS.addListener('error', error => {
       reject(error)
-    })
-  })
-}
-
-/**
- * write passed-in file
- * @param path file path need to write in
- * @param content content need to write into file
- * @param isAppending file need to be appended after existing file. default to `true`
- * @returns
- */
-export const writeStringIntoFile = (
-  path: string,
-  content: string,
-  isAppending: boolean = true
-) =>
-  new Promise<undefined>((resolve, reject) => {
-    writeFile(
-      path,
-      content,
-      {
-        flag: isAppending ? 'a+' : 'w'
-      },
-      err => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(undefined)
-        }
-      }
-    )
-  })
-
-export const writeFileBasedIndex = (
-  toPath: string,
-  fromPath: string,
-  startIndex: number,
-  endIndex: number
-) => {
-  const fileReadStream = createReadStream(fromPath, {
-    start: startIndex,
-    end: endIndex
-  })
-
-  const fileWriteStream = createWriteStream(toPath, {
-    flags: 'a+'
-  })
-
-  fileReadStream.pipe(fileWriteStream)
-
-  return new Promise((resolve, reject) => {
-    fileReadStream.on('error', err => {
-      reject(err)
-    })
-    fileReadStream.on('end', () => {
-      resolve(undefined)
-    })
-  })
-}
-
-/**
- * write bunch of string into file. it could be string content or partial file
- * @param writePath file path to write in
- * @param writableArr write content config
- * @param isAppend is appending to file
- * @returns resolved when writing end
- */
-export const writeBunchInfo2File = async (
-  writePath: string,
-  writableArr: WritableData[],
-  isAppend: boolean = false
-) => {
-  const combinedReadStream = formReadableSeries(writableArr)
-
-  const fileWriteStream = createWriteStream(writePath, {
-    flags: isAppend ? 'a+' : 'w+'
-  })
-
-  combinedReadStream.pipe(fileWriteStream)
-
-  return new Promise((resolve, reject) => {
-    combinedReadStream.on('end', () => {
-      resolve(undefined)
-    })
-    combinedReadStream.on('error', err => {
-      reject(err)
     })
   })
 }
