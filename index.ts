@@ -25,6 +25,6 @@ Promise.all([isValidPath(referencePath), isValidPath(comparedFilePath)]).then(
     }
 
     // compareBasedOnPath(referencePath, comparedFilePath)
-    compareFileWrite2File(referencePath, comparedFilePath, outputPath)
+    return compareFileWrite2File(referencePath, comparedFilePath, outputPath)
   }
 )
