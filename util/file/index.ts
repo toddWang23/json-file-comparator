@@ -1,6 +1,7 @@
 import { createReadStream } from 'fs'
 import { access, constants } from 'fs'
 import { FileReadOption } from './type'
+import { READ_CHUNK_SIZE } from 'constant/file'
 
 /**
  * check path passed-in is valid or not
@@ -18,24 +19,29 @@ export const isValidPath = (filePath: string): Promise<boolean> =>
  * read file partially based on file byte index
  * @param options configuration for file reading
  */
-export const readPartialFile = (options: FileReadOption): Promise<string> => {
+export const readPartialFile = <T>(
+  options: FileReadOption,
+  filter: (content: string, accumulation: T) => T,
+  initAccumulationValue: T
+): Promise<T> => {
   const { path, start = 0, end = Infinity } = options
 
   const referenceRS = createReadStream(path, {
     encoding: 'utf8',
     start,
-    end
+    end,
+    highWaterMark: READ_CHUNK_SIZE
   })
 
   return new Promise((resolve, reject) => {
-    let readString = ''
+    let accumulation: T = initAccumulationValue
 
     referenceRS.addListener('data', data => {
-      readString += data
+      accumulation = filter(data.toString(), accumulation)
     })
 
     referenceRS.addListener('close', () => {
-      resolve(readString)
+      resolve(accumulation)
     })
 
     referenceRS.addListener('error', error => {

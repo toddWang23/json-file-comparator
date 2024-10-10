@@ -1,3 +1,4 @@
+import { LEFT_BRACE, LEFT_BRACKET, QUOTE } from 'constant/char'
 import { DATA_TYPE, JsonLevel } from 'model/dataProcess'
 
 /**
@@ -7,19 +8,21 @@ import { DATA_TYPE, JsonLevel } from 'model/dataProcess'
  */
 export const getSectionType = (char: string) => {
   switch (char) {
-    case '{':
+    case LEFT_BRACE:
       return DATA_TYPE.OBJECT
 
-    case '"':
+    case QUOTE:
       return DATA_TYPE.STRING
 
-    case '[':
+    case LEFT_BRACKET:
       return DATA_TYPE.ARRAY
 
     default:
       const asciiCode = char.charCodeAt(0)
       if (asciiCode <= 57 && asciiCode >= 48) {
         return DATA_TYPE.NUMBER
+      } else {
+        return DATA_TYPE.BOOL // not exact, should check in find value part
       }
   }
 }
