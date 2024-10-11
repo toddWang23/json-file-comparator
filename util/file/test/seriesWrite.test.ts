@@ -1,12 +1,21 @@
 import path from 'path'
 import { FileWriteSeriesProcessor } from '../seriesWrite'
-import { readFileSync, rmSync } from 'fs'
+import { existsSync, readFileSync, rmSync } from 'fs'
+
+const updatePath = path.join(__dirname, './seriesWrite.test.txt')
+
+afterAll(() => {
+  rmSync(updatePath)
+})
 
 it('FileWriteSeriesProcessor: write chunks into file', () => {
-  const updatePath = path.join(__dirname, './seriesWrite.test.txt')
   const sourcePath = path.join(__dirname, './data.test.txt')
 
-  rmSync(updatePath)
+  if (existsSync(updatePath)) {
+    if (existsSync(updatePath)) {
+      rmSync(updatePath)
+    }
+  }
 
   const fileWriteHandler = new FileWriteSeriesProcessor(updatePath)
 
@@ -14,7 +23,7 @@ it('FileWriteSeriesProcessor: write chunks into file', () => {
     {
       fromPath: sourcePath,
       startIndex: 1,
-      endIndex: 2
+      endIndex: 3
     },
     '\n'
   ])

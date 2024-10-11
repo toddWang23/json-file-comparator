@@ -1,11 +1,11 @@
 import path from 'path'
-import { generateLevelDiffInfo } from '../fileDiff'
+import { generateLevelDiffInfo } from '../diffInfo'
 
 it('generateLevelDiffInfo: get object base level info', () => {
   const filePath = path.join(__dirname, './compareFile.json')
   return generateLevelDiffInfo(filePath)
     .then(data => {
-      const [firstLevel, secondLevel, thirdLevel] = data
+      const [firstLevel, secondLevel, thirdLevel, firthLevel] = data
 
       expect(firstLevel.attributeName).toBe('cxv')
       expect(firstLevel.type).toBe('string')
@@ -18,6 +18,9 @@ it('generateLevelDiffInfo: get object base level info', () => {
       expect(thirdLevel.attributeName).toBe('z')
       expect(thirdLevel.type).toBe('array')
       // expect(thirdLevel.endIndex - thirdLevel.startIndex).toBe(98)
+
+      expect(firthLevel.attributeName).toBe('boolean')
+      expect(firthLevel.type).toBe('boolean')
 
       return generateLevelDiffInfo(filePath, thirdLevel)
     })
@@ -51,11 +54,15 @@ it('generateLevelDiffInfo: get object base level info', () => {
       ])
     })
     .then(dataArr => {
-      const [[firstElement], [secondElement, thirdElement]] = dataArr
+      const [[firstElement, booleanElement], [secondElement, thirdElement]] =
+        dataArr
 
       expect(firstElement.attributeName).toBe('[0]')
       expect(firstElement.type).toBe('array')
       // expect(firstElement.endIndex - firstElement.startIndex).toBe(12)
+
+      expect(booleanElement.attributeName).toBe('[1]')
+      expect(booleanElement.type).toBe('boolean')
 
       expect(secondElement.attributeName).toBe('asdas')
       expect(secondElement.type).toBe('string')

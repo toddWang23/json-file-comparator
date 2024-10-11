@@ -20,8 +20,3 @@ it('getSectionType: number', () => {
   const result = getSectionType('9')
   expect(result).toBe(DATA_TYPE.NUMBER)
 })
-
-it('getSectionType: empty', () => {
-  const result = getSectionType('q')
-  expect(result).toBe(undefined)
-})

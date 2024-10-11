@@ -13,3 +13,5 @@ export const RIGHT_BRACE = '}'
 export const RIGHT_BRACKET = ']'
 
 export const SLASH = '\\'
+
+export const COMMA = ','

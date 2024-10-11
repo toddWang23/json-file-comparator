@@ -1,8 +1,8 @@
 import { open } from 'fs/promises'
 import { FileWriteSeriesProcessor } from 'util/file/seriesWrite'
 import { DIFF_RESULT } from 'model/diff'
-import { generateLevelDiffInfo } from './fileDiff'
-import { compareDataInLevel } from './levelDiff'
+import { generateLevelDiffInfo } from './diffInfo'
+import { compareDataInLevel } from './diffCompare'
 import { SourceLevelDetail } from './type'
 import { throwErrorWithCode } from 'util/error'
 import { WRITE_FILE_ERROR } from 'constant/errCode'
@@ -16,6 +16,7 @@ import { JsonLevel } from 'model/dataProcess'
  * @param parentPath parent json-path path
  * @param attribute current comparing attribute name
  * @param writeHandler file write handler
+ * @param readSize file read chunk size
  * @returns finish Promise status
  */
 const compareNextLevel = (
@@ -23,7 +24,8 @@ const compareNextLevel = (
   compareInfo: SourceLevelDetail<JsonLevel[]>,
   parentPath: string,
   attribute: string,
-  writeHandler: FileWriteSeriesProcessor
+  writeHandler: FileWriteSeriesProcessor,
+  readSize?: number
 ) => {
   const { path: referencePath, levelInfo: referenceLevel = [] } = referenceInfo
   const { path: comparePath, levelInfo: compareLevel = [] } = compareInfo
@@ -44,7 +46,8 @@ const compareNextLevel = (
         levelInfo: compareNode
       },
       writeHandler,
-      nextLevelJsonPath
+      nextLevelJsonPath,
+      readSize
     )
   }
 
@@ -57,13 +60,15 @@ const compareNextLevel = (
  * @param compareDetail compare node compare info
  * @param writeHandler write file handler
  * @param jsonPath parent level json path
+ * @param readSize file read chunk size
  * @returns
  */
 export const compareLevelWrite2File = async (
   referenceDetail: SourceLevelDetail<JsonLevel>,
   compareDetail: SourceLevelDetail<JsonLevel>,
   writeHandler: FileWriteSeriesProcessor,
-  jsonPath: string
+  jsonPath: string,
+  readSize?: number
 ) => {
   const { path: referenceSourcePath, levelInfo: referenceTask } =
     referenceDetail
@@ -72,8 +77,8 @@ export const compareLevelWrite2File = async (
 
   // not catch errors to expose to caller
   const [referenceLevels, compareLevels] = await Promise.all([
-    generateLevelDiffInfo(referenceSourcePath, referenceTask),
-    generateLevelDiffInfo(compareSourcePath, compareTask)
+    generateLevelDiffInfo(referenceSourcePath, referenceTask, readSize),
+    generateLevelDiffInfo(compareSourcePath, compareTask, readSize)
   ])
 
   const levelResults = await compareDataInLevel(
@@ -134,7 +139,8 @@ export const compareLevelWrite2File = async (
               },
               jsonPath,
               attribute,
-              writeHandler
+              writeHandler,
+              readSize
             )
           )
         }
@@ -171,7 +177,8 @@ export const compareLevelWrite2File = async (
               },
               jsonPath,
               attribute,
-              writeHandler
+              writeHandler,
+              readSize
             )
           )
         }
@@ -196,7 +203,8 @@ export const compareLevelWrite2File = async (
             },
             jsonPath,
             attribute,
-            writeHandler
+            writeHandler,
+            readSize
           )
         )
         break
@@ -241,7 +249,8 @@ export const compareLevelWrite2File = async (
 export const compareFileWrite2File = async (
   referencePath: string,
   comparePath: string,
-  outputPath: string
+  outputPath: string,
+  readSize?: number
 ) => {
   const fileWriteHandler = new FileWriteSeriesProcessor(outputPath)
 
@@ -255,7 +264,8 @@ export const compareFileWrite2File = async (
       path: comparePath
     },
     fileWriteHandler,
-    '$'
+    '$',
+    readSize
   )
 
   return new Promise(resolve => {

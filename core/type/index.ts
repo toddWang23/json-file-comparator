@@ -32,3 +32,9 @@ export interface LevelAccumulation {
   remainLevelInfo?: Partial<JsonLevel> & { stage?: SearchStage } // not finished
   throughSize?: number // processed file size by byte
 }
+
+export interface ValueCompare {
+  path: string
+  startIndex: number
+  endIndex: number
+}

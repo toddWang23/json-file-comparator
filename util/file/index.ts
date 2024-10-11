@@ -24,13 +24,18 @@ export const readPartialFile = <T>(
   filter: (content: string, accumulation: T) => T,
   initAccumulationValue: T
 ): Promise<T> => {
-  const { path, start = 0, end = Infinity } = options
+  const {
+    path,
+    start = 0,
+    end = Infinity,
+    readSize = READ_CHUNK_SIZE
+  } = options
 
   const referenceRS = createReadStream(path, {
     encoding: 'utf8',
     start,
     end,
-    highWaterMark: READ_CHUNK_SIZE
+    highWaterMark: readSize
   })
 
   return new Promise((resolve, reject) => {

@@ -2,26 +2,25 @@
   "compilerOptions": {
     "baseUrl": "./",
     "composite": true,
-    "target": "ES2020",
+    "target": "ES6",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
+    "declaration": true,
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    // "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "jsx": "react-jsx",
-
+    "outDir": "./dist",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "tsconfig.json"],
+  "exclude": ["node_modules"],
   "include": ["**/*.ts", "**/*.d.ts", "jest.config.ts"]
 }

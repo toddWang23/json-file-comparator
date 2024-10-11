@@ -3,7 +3,119 @@ import { JSON_KEY_REPEAT_MSG } from 'constant/errorMessage'
 import { DATA_TYPE, JsonLevel } from 'model/dataProcess'
 import { DIFF_RESULT, LevelDiffResult } from 'model/diff'
 import { throwErrorWithCode } from 'util/error'
-import { readPartialFile } from 'util/file'
+import { ValueCompare } from './type'
+import { createReadStream } from 'fs'
+import { READ_CHUNK_SIZE } from 'constant/file'
+
+/**
+ * compare two chunk result, return whether they are equal or not
+ * @param first first compare element
+ * @param second second compare element
+ * @returns
+ */
+const compareContentByIndex = async (
+  first: ValueCompare,
+  second: ValueCompare,
+  readSize?: number
+): Promise<boolean> => {
+  const {
+    startIndex: firstStartIndex,
+    endIndex: firstEndIndex,
+    path: firstFilePath
+  } = first
+
+  const {
+    startIndex: secondStartIndex,
+    endIndex: secondEndIndex,
+    path: secondFilePath
+  } = second
+
+  const firstStream = createReadStream(firstFilePath, {
+    start: firstStartIndex,
+    end: firstEndIndex,
+    encoding: 'utf8',
+    highWaterMark: readSize || READ_CHUNK_SIZE
+  })
+
+  const secondStream = createReadStream(secondFilePath, {
+    start: secondStartIndex,
+    end: secondEndIndex,
+    encoding: 'utf8',
+    highWaterMark: readSize || READ_CHUNK_SIZE
+  })
+
+  const chunkData: Record<string, string | undefined> = {
+    firstChunk: undefined,
+    secondChunk: undefined
+  }
+
+  // if stream is closed but underline file keep feeding
+  let isStreamClosed = false
+
+  let streamEndCounter = 0
+
+  return new Promise(resolve => {
+    /**
+     * compare data during data stream chunk flowing
+     */
+    const onStreamDataCompare = () => {
+      const { firstChunk = '', secondChunk = '' } = chunkData
+
+      // because compare value are same length, then it will execute now and then
+      if (
+        secondChunk !== undefined &&
+        secondChunk.length === firstChunk.length
+      ) {
+        // start to compare
+        if (firstChunk !== secondChunk) {
+          secondStream.close()
+          firstStream.close()
+          resolve(false)
+        } else {
+          chunkData.firstChunk = undefined
+          chunkData.secondChunk = undefined
+        }
+      }
+    }
+
+    /**
+     * stream end check compare result
+     */
+    const onStreamEnd = () => {
+      streamEndCounter++
+
+      if (streamEndCounter === 2) {
+        resolve(chunkData.firstChunk === chunkData.secondChunk)
+      }
+    }
+
+    firstStream.addListener('data', chunkStr => {
+      if (isStreamClosed) {
+        return
+      }
+
+      chunkData.firstChunk = (chunkData.firstChunk || '') + chunkStr.toString()
+      onStreamDataCompare()
+    })
+
+    firstStream.addListener('end', () => {
+      onStreamEnd()
+    })
+
+    secondStream.addListener('data', chunkStr => {
+      if (isStreamClosed) {
+        return
+      }
+      chunkData.secondChunk =
+        (chunkData.secondChunk || '') + chunkStr.toString()
+      onStreamDataCompare()
+    })
+
+    secondStream.addListener('end', () => {
+      onStreamEnd()
+    })
+  })
+}
 
 /**
  * compare difference level info
@@ -15,7 +127,8 @@ export const compareDataInLevel = async (
   referenceDiffInfo: JsonLevel[],
   compareDiffInfo: JsonLevel[],
   referencePath: string,
-  comparePath: string
+  comparePath: string,
+  readSize?: number
 ): Promise<LevelDiffResult[]> => {
   const result: LevelDiffResult[] = []
 
@@ -87,20 +200,21 @@ export const compareDataInLevel = async (
       compareEndIndex - compareStartIndex ===
         referenceEndIndex - referenceStartIndex
     ) {
-      const [referenceValue, compareValue] = await Promise.all([
-        readPartialFile({
+      const isTwoPartEqual = await compareContentByIndex(
+        {
           path: referencePath,
-          start: referenceStartIndex,
-          end: referenceEndIndex
-        }),
-        readPartialFile({
+          startIndex: referenceStartIndex,
+          endIndex: referenceEndIndex
+        },
+        {
           path: comparePath,
-          start: compareStartIndex,
-          end: compareEndIndex
-        })
-      ])
+          startIndex: compareStartIndex,
+          endIndex: compareEndIndex
+        },
+        readSize
+      )
 
-      if (referenceValue === compareValue) {
+      if (isTwoPartEqual) {
         // if it's object, it depends on subtle value
         result.push({
           type: isMoved ? DIFF_RESULT.MOVED : DIFF_RESULT.SAME,

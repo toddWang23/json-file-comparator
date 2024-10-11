@@ -15,7 +15,7 @@ import { getValueEndIndexByType } from './util/valueProcessor'
 import { getSectionType, hasChildNode } from './util/dataType'
 import { getNextValidCharIndex } from './util'
 import { LevelAccumulation, SearchStage, SymbolElement } from './type'
-import { QUOTE, RIGHT_BRACE, RIGHT_BRACKET } from 'constant/char'
+import { COMMA, QUOTE, RIGHT_BRACE, RIGHT_BRACKET } from 'constant/char'
 
 /**
  * loop the JSON string from start index, find key name wrapped by quote pair
@@ -130,7 +130,7 @@ const levelInfoProcessor = (
       accumulation.parentType === DATA_TYPE.OBJECT
     ) {
       // allow last level's splitter - comma
-      checkingIndex = getNextValidCharIndex(chunk, checkingIndex, ',', false)
+      checkingIndex = getNextValidCharIndex(chunk, checkingIndex, COMMA, false)
 
       // here is end of object
       if (chunk[checkingIndex] === RIGHT_BRACE) {
@@ -171,7 +171,7 @@ const levelInfoProcessor = (
       stage <= SearchStage.key &&
       accumulation.parentType === DATA_TYPE.ARRAY
     ) {
-      checkingIndex = getNextValidCharIndex(chunk, checkingIndex)
+      checkingIndex = getNextValidCharIndex(chunk, checkingIndex, COMMA, false)
       // here is end of array
       if (chunk[checkingIndex] === RIGHT_BRACKET) {
         break
@@ -256,7 +256,7 @@ const levelInfoProcessor = (
 
         break
       }
-      levelInfo.endIndex = levelEnd + throughSize
+      levelInfo.endIndex = levelEnd + throughSize + 1
 
       delete levelInfo.stage
 
@@ -265,7 +265,7 @@ const levelInfoProcessor = (
       levelInfo = {
         stage: SearchStage.key
       }
-      checkingIndex = getNextValidCharIndex(chunk, levelEnd + 1, ',')
+      checkingIndex = getNextValidCharIndex(chunk, levelEnd + 1, COMMA)
     }
   }
   nextAccumulation.throughSize =
@@ -282,9 +282,10 @@ const levelInfoProcessor = (
  */
 export const generateLevelDiffInfo = async (
   path: string,
-  levelInfo?: JsonLevel
+  levelInfo?: JsonLevel,
+  readSize?: number
 ): Promise<JsonLevel[]> => {
-  const { startIndex = 0, endIndex = undefined, type } = levelInfo || {}
+  const { startIndex = 0, endIndex = undefined } = levelInfo || {}
 
   // if current node has no sub nodes
   if (levelInfo && !hasChildNode(levelInfo)) {
@@ -295,7 +296,8 @@ export const generateLevelDiffInfo = async (
     {
       path,
       start: startIndex,
-      end: endIndex
+      end: endIndex,
+      readSize
     },
     levelInfoProcessor,
     {

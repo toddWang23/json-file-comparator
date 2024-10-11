@@ -36,7 +36,7 @@ const formReadableSeries = (readableArr: WritableData[]) => {
       const { fromPath, startIndex = 0, endIndex } = readableInfo!
       const fileReadStream = createReadStream(fromPath, {
         start: startIndex,
-        end: endIndex
+        end: (endIndex || Infinity) - 1 // an extra char is included when write file, so remove it here
       })
 
       combinedReadStream.append(fileReadStream)

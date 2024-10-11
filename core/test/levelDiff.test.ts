@@ -1,5 +1,5 @@
-import { generateLevelDiffInfo } from 'core/fileDiff'
-import { compareDataInLevel } from 'core/levelDiff'
+import { generateLevelDiffInfo } from 'core/diffInfo'
+import { compareDataInLevel } from 'core/diffCompare'
 import { DIFF_RESULT } from 'model/diff'
 import path from 'path'
 

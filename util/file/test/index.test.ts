@@ -21,20 +21,32 @@ beforeEach(() => {
   })
 })
 
+const readAccumulator = (content: string, accumulation: string) => {
+  return accumulation + content
+}
+
 it('readPartialFile: first character', () => {
-  return readPartialFile({
-    path: './util/file/data.test.txt',
-    start: 0,
-    end: 1
-  }).then(data => {
+  return readPartialFile(
+    {
+      path: './util/file/data.test.txt',
+      start: 0,
+      end: 1
+    },
+    readAccumulator,
+    ''
+  ).then(data => {
     expect(data).toBe('te')
   })
 })
 
 it('readPartialFile: default all file', () => {
-  return readPartialFile({
-    path: './util/file/data.test.txt'
-  }).then(data => {
+  return readPartialFile(
+    {
+      path: './util/file/data.test.txt'
+    },
+    readAccumulator,
+    ''
+  ).then(data => {
     expect(data).toBe('test line')
   })
 })
