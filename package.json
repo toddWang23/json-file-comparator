@@ -8,7 +8,8 @@
     "test": "jest",
     "testFile": "jest --findRelatedTests",
     "testCoverage": "jest --coverage",
-    "publishWindows": "wsl bash ./build/publish.sh"
+    "publishWindows": "wsl bash ./build/publish.sh",
+    "publish": "npm publish"
   },
   "bin": "./command.ts",
   "repository": {
