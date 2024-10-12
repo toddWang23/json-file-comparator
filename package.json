@@ -1,6 +1,6 @@
 {
   "name": "json-file-comparator",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "json file comparator",
   "main": "index.js",
   "scripts": {
@@ -8,9 +8,7 @@
     "test": "jest",
     "testFile": "jest --findRelatedTests",
     "testCoverage": "jest --coverage",
-    "publishWindows": "wsl bash ./build/publish.sh",
-    "publish": "sh ./build/publish.sh"
-
+    "publishWindows": "wsl bash ./build/publish.sh"
   },
   "bin": "./command.ts",
   "repository": {
