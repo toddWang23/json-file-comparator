@@ -10,7 +10,7 @@ export default {
         sourcemap: true,
         format: 'esm'
     }, {
-        file: path.resolve(__dirname, './dist/index.cjs.js'),
+        file: path.resolve(__dirname, './dist/index.js'),
         sourcemap: true,
         format: 'cjs'
     }],

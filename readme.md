@@ -22,9 +22,22 @@ Output file: file that write comparasion result into.
 
 ## Usage
 
-It's not accessable from NPM yet, but it accept three parameters as below:
+It accept four parameters as below:
 
-> node json-file-comparator --reference=reference-file-path --compare=compare-file-path --output=output-file-path
+### Command
+
+> node json-file-comparator --reference=reference-file-path --compare=compare-file-path --output=output-file-path --size=10240
+
+`reference`: reference file path
+
+`compare`: compare file path
+
+`output`: output file path
+
+`size`: read file size. Change as memory requirement.
+
+### Funtion call
+
 
 compare result is flattened because of performance issue while sync write. Basically it's like:
 
