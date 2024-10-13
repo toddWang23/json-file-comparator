@@ -6,7 +6,7 @@ const { compareJSON2File } = require('./index')
  * @param inputArr input parameter array
  * @returns
  */
-export const getParamFromStr = (inputArr) =>
+const getParamFromStr = (inputArr) =>
   inputArr.reduce((prev, inputStr) => {
     if (inputStr.startsWith('--')) {
       const paramStr = inputStr.substring(2)
@@ -45,7 +45,6 @@ const {
   [CHUNK_SIZE]: chunkSize
 } = getParamFromStr(param)
 
-console.log(referencePath, comparedFilePath, outputPath, chunkSize)
 
 // passed in file read size
 const readSize = Number(chunkSize)
