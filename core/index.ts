@@ -274,10 +274,14 @@ export const compareFileWrite2File = async (
       open(outputPath, 'r+').then(fileHandler => {
         fileHandler.stat().then(fileInfo => {
           const fileSize = fileInfo.size
+
           fileHandler
             .truncate(fileSize - 1)
             .then(() => {
-              fileHandler.write('}', fileSize - 1)
+              // all output file will have left brace, so if still have other content, then write right brace after delete comma
+              if (fileSize > 1) {
+                fileHandler.write('}', fileSize - 1)
+              }
               resolve(undefined)
             })
             .catch(err => {

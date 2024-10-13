@@ -1,6 +1,15 @@
 // passed-in path is invalid JSON path
 export const INVALID_PATH_CODE = 1001
 
+// reference file path required
+export const REF_FILE_PATH_REQUIRED = 100101
+
+// compare file path required
+export const COMP_FILE_PATH_REQUIRED = 100102
+
+// output file path required
+export const OUT_FILE_PATH_REQUIRED = 100103
+
 // passed-in file is not JSON file
 export const INVALID__JSON_FILE_CODE = 1002
 
