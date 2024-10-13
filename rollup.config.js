@@ -1,6 +1,7 @@
 import path from "path";
 import ts from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
+import copy from 'rollup-plugin-copy'
 
 export default {
     input: './index.ts',
@@ -18,5 +19,10 @@ export default {
     plugins: [
         ts(),
         terser(),
+        copy({
+            targets: [
+                { src: 'command.js', dest: 'dist' }
+            ]
+        })
     ]
 }

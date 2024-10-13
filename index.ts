@@ -4,7 +4,7 @@ import { isValidPath } from './util/file'
 import { throwErrorWithCode } from 'util/error'
 import { compareFileWrite2File } from 'core'
 
-export default async (
+export const compareJSON2File = async (
   referenceFilePath: string,
   comparedFilePath: string,
   outputPath: string,

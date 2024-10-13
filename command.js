@@ -1,11 +1,14 @@
-import {
+#!/usr/bin/env node
+const {
   CHUNK_SIZE,
   COMPARE_PARAM,
   OUTPUT_PARAM,
   REFERENCE_PARAM
-} from './constant/param'
-import { getParamFromStr } from './util'
-import compareFile from './index'
+} = require('./constant/param')
+
+const { getParamFromStr } = require('./util')
+const { compareJSON2File } = require('./index')
+
 const param = process.argv.slice(2)
 
 const {
@@ -15,10 +18,12 @@ const {
   [CHUNK_SIZE]: chunkSize
 } = getParamFromStr(param)
 
+console.log(referencePath, comparedFilePath, outputPath, chunkSize)
+
 // passed in file read size
 const readSize = Number(chunkSize)
 
-compareFile(
+compareJSON2File(
   referencePath,
   comparedFilePath,
   outputPath,

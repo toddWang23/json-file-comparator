@@ -4,7 +4,7 @@
     "composite": true,
     "target": "ES6",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020"],
     "module": "ESNext",
     "skipLibCheck": true,
     "declaration": true,
@@ -22,5 +22,5 @@
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules"],
-  "include": ["**/*.ts", "**/*.d.ts", "jest.config.ts"]
+  "include": ["**/*.ts", "**/*.d.ts", "command.js"]
 }

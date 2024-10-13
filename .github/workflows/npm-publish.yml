@@ -17,7 +17,13 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run test
+      - name: Run tests
+        run: npm run test
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   publish-npm:
     needs: build

@@ -38,7 +38,6 @@ It accept four parameters as below:
 
 ### Funtion call
 
-
 compare result is flattened because of performance issue while sync write. Basically it's like:
 
 ```
@@ -75,7 +74,7 @@ compare result is flattened because of performance issue while sync write. Basic
 
 * [ ]  Improve file read performance. Because it takes time when open file frequently, and read file based on file index, packages like `highland` might help.
 * [ ]  Array comparasion. Array should not be compared based on key, value should be better choice. It can also help when it comes to **key change** scenario.
-* [ ]  Adjustable memory usage parameters.
+* [X]  Adjustable memory usage parameters.
 * [ ]  Online website. Which accept file upload and download comparasion result file, also JSON file comparasion result difference display.
 * [ ]  In-memory JSON object comparasion.
 
