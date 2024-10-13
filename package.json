@@ -1,13 +1,14 @@
 {
   "name": "json-file-comparator",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "json file comparator",
   "main": "index.js",
   "scripts": {
     "build": "rollup -c",
     "test": "jest --coverage",
     "testFile": "jest --findRelatedTests",
-    "publishWindows": "wsl bash ./build/publish.sh"
+    "publishWindows": "wsl bash ./build/publish.sh",
+    "gitPublish": "sh ./build/publish.sh"
   },
   "bin": "./command.js",
   "repository": {
