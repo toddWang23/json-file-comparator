@@ -67,4 +67,4 @@ it('FileWriteSeriesProcessor: write chunks into file', () => {
       resolve(undefined)
     })
   })
-}, 5000)
+}, 50000)

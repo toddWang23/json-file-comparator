@@ -6,6 +6,9 @@ export const COMP_FILE_PATH_REQUIRED_MSG = 'Compare file is required, found: '
 
 export const OUT_FILE_PATH_REQUIRED_MSG = 'Output file is required, found: '
 
+export const OUT_FILE_CREATE_FAILED_MSG =
+  "Output file doesn't exist, or can't be created for access reason: "
+
 export const JSON_KEY_NUMBER_STR_MIX_MSG = 'Key is closed at index: '
 
 export const JSON_COLON_MISS_MSG = 'Colon is missed at index: '

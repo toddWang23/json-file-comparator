@@ -10,6 +10,9 @@ export const COMP_FILE_PATH_REQUIRED = 100102
 // output file path required
 export const OUT_FILE_PATH_REQUIRED = 100103
 
+// output file not exist, and failed when create
+export const OUT_FILE_CREATE_FAILED = 100104
+
 // passed-in file is not JSON file
 export const INVALID__JSON_FILE_CODE = 1002
 

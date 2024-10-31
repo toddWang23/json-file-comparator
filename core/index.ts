@@ -213,8 +213,8 @@ export const compareLevelWrite2File = async (
           `"${jsonPath}.${attribute}": {"type": "add", "content": `,
           {
             fromPath: compareSourcePath,
-            startIndex: compareLevels[i].startIndex,
-            endIndex: compareLevels[i].endIndex
+            startIndex: compareStartFileIndex,
+            endIndex: compareEndFileIndex
           },
           `},`
         ])
@@ -224,8 +224,8 @@ export const compareLevelWrite2File = async (
           `"${jsonPath}.${attribute}": {"type": "removed", "content": `,
           {
             fromPath: referenceSourcePath,
-            startIndex: referenceLevels[i].startIndex,
-            endIndex: referenceLevels[i].endIndex
+            startIndex: refStartFileIndex,
+            endIndex: refEndFileIndex
           },
           `},`
         ])
