@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from 'fs'
-import { compareFileWrite2File } from '../index'
+import { compareJSON2File } from '../../index'
 import path from 'path'
 
 const resultFilePath = path.join(__dirname, './compareResult.txt')
@@ -18,7 +18,7 @@ it('compareFileWrite2File: compare one node change file', () => {
     rmSync(resultFilePath)
   }
 
-  return compareFileWrite2File(
+  return compareJSON2File(
     referenceFilePath,
     compareFilePath,
     resultFilePath

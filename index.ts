@@ -14,7 +14,7 @@ import {
 } from './constant/errCode'
 import { isValidPath } from './util/file'
 import { throwErrorWithCode } from 'util/error'
-import { compareFileWrite2File } from 'core'
+import { compareFileWrite2File } from './core'
 import { access, constants, open } from 'fs'
 
 /**
@@ -31,7 +31,7 @@ const isOutputPathValid = (outputPath: string) =>
           if (createErr) {
             resolve(false)
           } else {
-            resolve(false)
+            resolve(true)
           }
         })
       } else {
@@ -77,7 +77,7 @@ export const compareJSON2File = async (
     )
   }
 
-  Promise.all([
+  return Promise.all([
     isValidPath(referenceFilePath),
     isValidPath(comparedFilePath),
     isOutputPathValid(outputPath)
@@ -90,7 +90,7 @@ export const compareJSON2File = async (
       throwErrorWithCode(INVALID_PATH_CODE, NO_READ_AUTH_MSG, referenceFilePath)
     }
 
-    if (isOutputPathValid) {
+    if (!isOutputPathValid) {
       throwErrorWithCode(
         OUT_FILE_CREATE_FAILED,
         OUT_FILE_CREATE_FAILED_MSG,
