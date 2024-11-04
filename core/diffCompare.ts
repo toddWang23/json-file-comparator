@@ -61,11 +61,12 @@ const compareContentByIndex = async (
     const onStreamDataCompare = () => {
       const { firstChunk = '', secondChunk = '' } = chunkData
 
-      // because compare value are same length, then it will execute now and then
-      if (
-        secondChunk !== undefined &&
-        secondChunk.length === firstChunk.length
-      ) {
+      // balance two chunk length, stop faster stream until same chunk to compare length
+      if (firstChunk.length > secondChunk.length) {
+        firstStream.pause()
+      } else if (firstChunk.length < secondChunk.length) {
+        secondStream.pause()
+      } else {
         // start to compare
         if (firstChunk !== secondChunk) {
           secondStream.close()
@@ -74,6 +75,8 @@ const compareContentByIndex = async (
         } else {
           chunkData.firstChunk = undefined
           chunkData.secondChunk = undefined
+          firstStream.resume()
+          secondStream.resume()
         }
       }
     }

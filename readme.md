@@ -74,10 +74,11 @@ compare result is flattened because of performance issue while sync write. Basic
 
 ## Roadmap
 
-* [ ]  Improve file read performance. Because it takes time when open file frequently, and read file based on file index, packages like `highland` might help.
+* [X]  Improve file read performance. Because it takes time when open file frequently, and read file based on file index, packages like `highland` might help.
+* [X]  Huge JSON value compare process in stream way
 * [ ]  Array comparasion. Array should not be compared based on key, value should be better choice. It can also help when it comes to **key change** scenario.
 * [X]  Adjustable memory usage parameters.
-* [ ]  Online website. Which accept file upload and download comparasion result file, also JSON file comparasion result difference display.
+* [X]  Online website. Which accept file upload and download comparasion result file, also JSON file comparasion result difference display.
 * [ ]  In-memory JSON object comparasion.
 
 ## Demo

@@ -1,6 +1,6 @@
 {
   "name": "json-file-comparator",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "json file comparator",
   "main": "index.js",
   "scripts": {
